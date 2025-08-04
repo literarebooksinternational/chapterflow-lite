@@ -14,7 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      admin_emails: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      envios_capitulos: {
+        Row: {
+          comentario_adicional: string | null
+          created_at: string
+          email: string
+          id: string
+          livro: string
+          nome: string
+          observacao_admin: string | null
+          status: Database["public"]["Enums"]["status_envio"]
+          tipo_participacao: Database["public"]["Enums"]["tipo_participacao"]
+          titulo_capitulo: string
+          updated_at: string
+          url_arquivo: string
+        }
+        Insert: {
+          comentario_adicional?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          livro: string
+          nome: string
+          observacao_admin?: string | null
+          status?: Database["public"]["Enums"]["status_envio"]
+          tipo_participacao: Database["public"]["Enums"]["tipo_participacao"]
+          titulo_capitulo: string
+          updated_at?: string
+          url_arquivo: string
+        }
+        Update: {
+          comentario_adicional?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          livro?: string
+          nome?: string
+          observacao_admin?: string | null
+          status?: Database["public"]["Enums"]["status_envio"]
+          tipo_participacao?: Database["public"]["Enums"]["tipo_participacao"]
+          titulo_capitulo?: string
+          updated_at?: string
+          url_arquivo?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +85,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      status_envio: "Recebido" | "Em Análise" | "Aprovado" | "Solicitar Ajustes"
+      tipo_participacao: "Solo" | "Coautoria"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +213,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      status_envio: ["Recebido", "Em Análise", "Aprovado", "Solicitar Ajustes"],
+      tipo_participacao: ["Solo", "Coautoria"],
+    },
   },
 } as const
