@@ -6,11 +6,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { EnvioCapitulo, StatusEnvio } from '@/types/database';
+import { EnvioCapitulo, StatusEnvio, Profile } from '@/types/database';
 import { Navigate } from 'react-router-dom';
+import ChapterChat from '@/components/AdminDashboard/ChapterChat';
 import { 
   FileText, 
   Download, 
@@ -23,7 +25,9 @@ import {
   Calendar,
   User,
   Book,
-  Edit2
+  Edit2,
+  MessageCircle,
+  UserPlus
 } from 'lucide-react';
 import Papa from 'papaparse';
 import { animateIn } from '@/hooks/useGSAP';
@@ -31,14 +35,18 @@ import { animateIn } from '@/hooks/useGSAP';
 export default function AdminDashboard() {
   const [envios, setEnvios] = useState<EnvioCapitulo[]>([]);
   const [filteredEnvios, setFilteredEnvios] = useState<EnvioCapitulo[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusEnvio | 'all'>('all');
+  const [responsibleFilter, setResponsibleFilter] = useState<string>('all');
   const [editingEnvio, setEditingEnvio] = useState<string | null>(null);
-  const [editData, setEditData] = useState<{ status: StatusEnvio; observacao: string }>({
+  const [editData, setEditData] = useState<{ status: StatusEnvio; observacao: string; responsibleUserId: string }>({
     status: 'Recebido',
-    observacao: ''
+    observacao: '',
+    responsibleUserId: ''
   });
+  const [chatChapterId, setChatChapterId] = useState<string | null>(null);
 
   const { user, isAuthorized, signOut, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -53,12 +61,13 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (user && isAuthorized) {
       fetchEnvios();
+      fetchProfiles();
     }
   }, [user, isAuthorized]);
 
   useEffect(() => {
     filterEnvios();
-  }, [envios, searchTerm, statusFilter]);
+  }, [envios, searchTerm, statusFilter, responsibleFilter]);
 
   // Redirect if not authenticated or not authorized
   if (authLoading) {
@@ -77,7 +86,10 @@ export default function AdminDashboard() {
     try {
       const { data, error } = await supabase
         .from('envios_capitulos')
-        .select('*')
+        .select(`
+          *,
+          responsible_profile:profiles!envios_capitulos_responsible_user_id_fkey(*)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -90,6 +102,20 @@ export default function AdminDashboard() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchProfiles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('display_name');
+
+      if (error) throw error;
+      setProfiles(data || []);
+    } catch (error) {
+      console.error('Error fetching profiles:', error);
     }
   };
 
@@ -107,6 +133,10 @@ export default function AdminDashboard() {
 
     if (statusFilter !== 'all') {
       filtered = filtered.filter(envio => envio.status === statusFilter);
+    }
+
+    if (responsibleFilter !== 'all') {
+      filtered = filtered.filter(envio => envio.responsible_user_id === responsibleFilter);
     }
 
     setFilteredEnvios(filtered);
@@ -152,6 +182,20 @@ export default function AdminDashboard() {
 
       if (error) throw error;
 
+      // Send notification email if status changed to Aprovado or Solicitar Ajustes
+      if (updates.status && ['Aprovado', 'Solicitar Ajustes'].includes(updates.status)) {
+        try {
+          await supabase.functions.invoke('send-notifications', {
+            body: {
+              chapter_id: id,
+              status: updates.status
+            }
+          });
+        } catch (emailError) {
+          console.error('Error sending notification email:', emailError);
+        }
+      }
+
       // Update local state
       setEnvios(prev => prev.map(envio => 
         envio.id === id ? { ...envio, ...updates } : envio
@@ -163,6 +207,7 @@ export default function AdminDashboard() {
       });
 
       setEditingEnvio(null);
+      await fetchEnvios(); // Refresh to get updated responsible profile
     } catch (error) {
       toast({
         title: 'Erro ao atualizar',
@@ -222,40 +267,51 @@ export default function AdminDashboard() {
     setEditingEnvio(envio.id);
     setEditData({
       status: envio.status,
-      observacao: envio.observacao_admin || ''
+      observacao: envio.observacao_admin || '',
+      responsibleUserId: envio.responsible_user_id || ''
     });
   };
 
   const cancelEdit = () => {
     setEditingEnvio(null);
-    setEditData({ status: 'Recebido', observacao: '' });
+    setEditData({ status: 'Recebido', observacao: '', responsibleUserId: '' });
   };
 
   const saveEdit = (id: string) => {
     updateEnvio(id, {
       status: editData.status,
-      observacao_admin: editData.observacao
+      observacao_admin: editData.observacao,
+      responsible_user_id: editData.responsibleUserId || null
     });
   };
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
+    <div className="min-h-screen gradient-dark">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="glass border-b border-glass-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
               <FileText className="h-8 w-8 text-editorial" />
               <div>
-                <span className="text-xl font-bold">Literare Books</span>
-                <p className="text-sm text-muted-foreground">Painel Administrativo</p>
+                <span className="text-xl font-bold gradient-primary bg-clip-text text-transparent">Literare Books</span>
+                <p className="text-sm text-glass">Painel Administrativo</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-glass">
                 {user?.email}
               </span>
-              <Button variant="outline" onClick={signOut}>
+              <Button variant="outline" onClick={signOut} className="glass-button glass-hover border-editorial/30">
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair
               </Button>
@@ -346,7 +402,7 @@ export default function AdminDashboard() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Status</label>
                   <Select value={statusFilter} onValueChange={(value: StatusEnvio | 'all') => setStatusFilter(value)}>
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-[180px] glass">
                       <SelectValue placeholder="Filtrar por status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -355,6 +411,23 @@ export default function AdminDashboard() {
                       <SelectItem value="Em Análise">Em Análise</SelectItem>
                       <SelectItem value="Aprovado">Aprovado</SelectItem>
                       <SelectItem value="Solicitar Ajustes">Solicitar Ajustes</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Responsável</label>
+                  <Select value={responsibleFilter} onValueChange={setResponsibleFilter}>
+                    <SelectTrigger className="w-[180px] glass">
+                      <SelectValue placeholder="Filtrar por responsável" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      {profiles.map((profile) => (
+                        <SelectItem key={profile.user_id} value={profile.user_id}>
+                          {profile.display_name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -471,14 +544,23 @@ export default function AdminDashboard() {
                               >
                                 <Download className="h-3 w-3" />
                               </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => startEdit(envio)}
-                                disabled={editingEnvio === envio.id}
-                              >
-                                <Edit2 className="h-3 w-3" />
-                              </Button>
+                               <Button
+                                 size="sm"
+                                 variant="outline"
+                                 onClick={() => startEdit(envio)}
+                                 disabled={editingEnvio === envio.id}
+                                 className="glass-button glass-hover"
+                               >
+                                 <Edit2 className="h-3 w-3" />
+                               </Button>
+                               <Button
+                                 size="sm"
+                                 variant="outline"
+                                 onClick={() => setChatChapterId(envio.id)}
+                                 className="glass-button glass-hover"
+                               >
+                                 <MessageCircle className="h-3 w-3" />
+                               </Button>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -502,6 +584,13 @@ export default function AdminDashboard() {
           </Card>
         </div>
       </div>
+
+      {/* Chapter Chat Modal */}
+      <ChapterChat
+        chapterId={chatChapterId || ''}
+        isOpen={!!chatChapterId}
+        onClose={() => setChatChapterId(null)}
+      />
     </div>
   );
 }

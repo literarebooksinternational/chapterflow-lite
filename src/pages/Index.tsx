@@ -1,11 +1,118 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { animateIn } from '@/hooks/useGSAP';
+import { BookOpen, FileText, Users, Award } from 'lucide-react';
 
 const Index = () => {
+  const heroRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (heroRef.current) {
+      animateIn(Array.from(heroRef.current.children), { delay: 0.15 });
+    }
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen gradient-dark">
+      {/* Hero Section */}
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--editorial-orange)) 1px, transparent 0)`,
+            backgroundSize: '40px 40px'
+          }} />
+        </div>
+
+        <div className="container mx-auto px-4 py-20 relative z-10">
+          <div ref={heroRef} className="text-center max-w-4xl mx-auto">
+            {/* Logo/Brand */}
+            <div className="glass-card mb-8 inline-flex items-center space-x-3">
+              <BookOpen className="h-8 w-8 text-editorial" />
+              <span className="text-2xl font-bold gradient-primary bg-clip-text text-transparent">
+                Literare Books
+              </span>
+            </div>
+
+            {/* Main Heading */}
+            <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
+              Sistema Editorial
+              <span className="block gradient-primary bg-clip-text text-transparent">
+                Moderno
+              </span>
+            </h1>
+
+            {/* Subtitle */}
+            <p className="text-xl md:text-2xl text-glass mb-12 max-w-2xl mx-auto leading-relaxed">
+              Centralize envios de capítulos, gerencie autores e coautores com total controle e organização.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+              <Link to="/submit">
+                <Button className="glass-button glass-hover text-lg px-8 py-4 h-auto">
+                  <FileText className="h-5 w-5 mr-2" />
+                  Enviar Capítulo
+                </Button>
+              </Link>
+              
+              <Link to="/instructions">
+                <Button variant="outline" className="glass-button glass-hover text-lg px-8 py-4 h-auto border-editorial/30 text-editorial hover:bg-editorial/10">
+                  <BookOpen className="h-5 w-5 mr-2" />
+                  Ver Instruções
+                </Button>
+              </Link>
+            </div>
+
+            {/* Features Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20">
+              <div className="glass-card glass-hover text-center">
+                <div className="gradient-primary w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FileText className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">Envio Simplificado</h3>
+                <p className="text-glass">
+                  Formulário intuitivo para envio de capítulos com validação automática.
+                </p>
+              </div>
+
+              <div className="glass-card glass-hover text-center">
+                <div className="gradient-primary w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">Gestão Colaborativa</h3>
+                <p className="text-glass">
+                  Painel administrativo completo para gerenciar autores e revisões.
+                </p>
+              </div>
+
+              <div className="glass-card glass-hover text-center">
+                <div className="gradient-primary w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Award className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">Controle Total</h3>
+                <p className="text-glass">
+                  Acompanhe status, adicione comentários e exporte relatórios.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Floating Elements */}
+        <div className="absolute top-20 left-10 w-20 h-20 gradient-primary rounded-full opacity-20 animate-pulse" />
+        <div className="absolute bottom-20 right-10 w-16 h-16 gradient-primary rounded-full opacity-10 animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-5 w-12 h-12 gradient-primary rounded-full opacity-15 animate-pulse" style={{ animationDelay: '2s' }} />
+      </div>
+
+      {/* Admin Access Footer */}
+      <div className="fixed bottom-6 right-6">
+        <Link to="/admin">
+          <Button variant="outline" className="glass-button glass-hover border-editorial/30 text-editorial hover:bg-editorial/10">
+            Acesso Administrativo
+          </Button>
+        </Link>
       </div>
     </div>
   );

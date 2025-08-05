@@ -32,6 +32,41 @@ export type Database = {
         }
         Relationships: []
       }
+      chapter_comments: {
+        Row: {
+          chapter_id: string
+          comment: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chapter_id: string
+          comment: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chapter_id?: string
+          comment?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapter_comments_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "envios_capitulos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       envios_capitulos: {
         Row: {
           comentario_adicional: string | null
@@ -41,6 +76,7 @@ export type Database = {
           livro: string
           nome: string
           observacao_admin: string | null
+          responsible_user_id: string | null
           status: Database["public"]["Enums"]["status_envio"]
           tipo_participacao: Database["public"]["Enums"]["tipo_participacao"]
           titulo_capitulo: string
@@ -55,6 +91,7 @@ export type Database = {
           livro: string
           nome: string
           observacao_admin?: string | null
+          responsible_user_id?: string | null
           status?: Database["public"]["Enums"]["status_envio"]
           tipo_participacao: Database["public"]["Enums"]["tipo_participacao"]
           titulo_capitulo: string
@@ -69,11 +106,53 @@ export type Database = {
           livro?: string
           nome?: string
           observacao_admin?: string | null
+          responsible_user_id?: string | null
           status?: Database["public"]["Enums"]["status_envio"]
           tipo_participacao?: Database["public"]["Enums"]["tipo_participacao"]
           titulo_capitulo?: string
           updated_at?: string
           url_arquivo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "envios_capitulos_responsible_user_id_fkey"
+            columns: ["responsible_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name: string
+          email: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string
+          email?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -87,6 +166,7 @@ export type Database = {
     Enums: {
       status_envio: "Recebido" | "Em Análise" | "Aprovado" | "Solicitar Ajustes"
       tipo_participacao: "Solo" | "Coautoria"
+      user_role: "admin" | "editor" | "reviewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -216,6 +296,7 @@ export const Constants = {
     Enums: {
       status_envio: ["Recebido", "Em Análise", "Aprovado", "Solicitar Ajustes"],
       tipo_participacao: ["Solo", "Coautoria"],
+      user_role: ["admin", "editor", "reviewer"],
     },
   },
 } as const
