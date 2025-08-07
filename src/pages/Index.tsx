@@ -45,7 +45,7 @@ const Index = () => {
 
             {/* Subtitle */}
             <p className="text-xl md:text-2xl text-glass mb-12 max-w-2xl mx-auto leading-relaxed">
-              Centralize envios de capítulos, gerencie autores e coautores com total controle e organização.
+              Autoras e autores da Literare Books, enviem seus capítulos com praticidade e organização pelo formulário abaixo.
             </p>
 
             {/* CTA Buttons */}
@@ -110,7 +110,7 @@ const Index = () => {
       <div className="fixed bottom-6 right-6">
         <Link to="/admin">
           <Button variant="outline" className="glass-button glass-hover border-editorial/30 text-editorial hover:bg-editorial/10">
-            Acesso Administrativo
+            Acesso Editorial
           </Button>
         </Link>
       </div>
