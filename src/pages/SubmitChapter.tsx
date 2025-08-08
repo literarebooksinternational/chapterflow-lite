@@ -48,7 +48,7 @@ export default function SubmitChapter() {
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 max-w-4xl mx-auto">
-            <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-sm hover-lift">
+            <div className="flex flex-col items-center p-6 bg-black rounded-lg shadow-sm hover-lift">
               <FileText className="h-12 w-12 text-editorial mb-4" />
               <h3 className="font-semibold mb-2">Fácil de usar</h3>
               <p className="text-sm text-muted-foreground text-center">
@@ -56,7 +56,7 @@ export default function SubmitChapter() {
               </p>
             </div>
             
-            <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-sm hover-lift">
+            <div className="flex flex-col items-center p-6 bg-black rounded-lg shadow-sm hover-lift">
               <Shield className="h-12 w-12 text-editorial mb-4" />
               <h3 className="font-semibold mb-2">Seguro</h3>
               <p className="text-sm text-muted-foreground text-center">
@@ -64,7 +64,7 @@ export default function SubmitChapter() {
               </p>
             </div>
             
-            <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-sm hover-lift">
+            <div className="flex flex-col items-center p-6 bg-black rounded-lg shadow-sm hover-lift">
               <Users className="h-12 w-12 text-editorial mb-4" />
               <h3 className="font-semibold mb-2">Organizado</h3>
               <p className="text-sm text-muted-foreground text-center">
