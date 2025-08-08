@@ -27,12 +27,17 @@ const Index = () => {
 
         <div className="container mx-auto px-4 py-20 relative z-10">
           <div ref={heroRef} className="text-center max-w-4xl mx-auto">
-            {/* Logo/Brand */}
-            <div className="glass-card mb-8 inline-flex items-center space-x-3">
-              <BookOpen className="h-8 w-8 text-editorial" />
-              <span className="text-2xl font-bold gradient-primary bg-clip-text text-transparent">
-                Literare Books
-              </span>
+            {/* Espaço para Logo da Empresa */}
+            <div className="glass-card mb-8 inline-flex items-center justify-center p-6">
+              {/* 
+                Para alterar o logo: 
+                1. Substitua o comentário abaixo por: <img src="/caminho-para-logo.png" alt="Logo da Empresa" className="h-12 w-auto" />
+                2. Ajuste a altura (h-12) conforme necessário
+              */}
+              <div className="flex items-center space-x-3 text-editorial text-2xl font-bold">
+                <BookOpen className="h-8 w-8" />
+                <span>Espaço para Logo</span>
+              </div>
             </div>
 
             {/* Main Heading */}
@@ -65,9 +70,9 @@ const Index = () => {
               </Link>
             </div>
 
-            {/* Features Grid */}
+            {/* Cards de Funcionalidades - Background alterado para #131313 */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20">
-              <div className="glass-card glass-hover text-center">
+              <div className="glass-card glass-hover text-center" style={{ backgroundColor: '#131313' }}>
                 <div className="gradient-primary w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                   <FileText className="h-6 w-6 text-white" />
                 </div>
@@ -77,7 +82,7 @@ const Index = () => {
                 </p>
               </div>
 
-              <div className="glass-card glass-hover text-center">
+              <div className="glass-card glass-hover text-center" style={{ backgroundColor: '#131313' }}>
                 <div className="gradient-primary w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Users className="h-6 w-6 text-white" />
                 </div>
@@ -87,7 +92,7 @@ const Index = () => {
                 </p>
               </div>
 
-              <div className="glass-card glass-hover text-center">
+              <div className="glass-card glass-hover text-center" style={{ backgroundColor: '#131313' }}>
                 <div className="gradient-primary w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Award className="h-6 w-6 text-white" />
                 </div>

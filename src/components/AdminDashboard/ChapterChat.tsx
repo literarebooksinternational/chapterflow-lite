@@ -97,6 +97,7 @@ export default function ChapterChat({ chapterId, isOpen, onClose }: ChapterChatP
     }
   };
 
+  // Função para gerar iniciais do nome do usuário para avatar
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -138,25 +139,34 @@ export default function ChapterChat({ chapterId, isOpen, onClose }: ChapterChatP
               </div>
             ) : (
               <div className="space-y-4">
+                {/* Lista de comentários - visível para todos os usuários admin */}
                 {comments.map((comment) => (
                   <div key={comment.id} className="flex space-x-3">
+                    {/* Avatar/Foto do usuário que comentou */}
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={(comment as any).profiles?.avatar_url} />
-                      <AvatarFallback>
-                        {getInitials((comment as any).profiles?.display_name || 'U')}
+                      <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                        {getInitials((comment as any).profiles?.display_name || (comment as any).profiles?.email || 'U')}
                       </AvatarFallback>
                     </Avatar>
                     
                     <div className="flex-1 glass rounded-lg p-3">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-sm">
-                          {(comment as any).profiles?.display_name || 'Usuário'}
-                        </span>
+                        {/* Nome e email do autor do comentário */}
+                        <div className="flex flex-col">
+                          <span className="font-medium text-sm">
+                            {(comment as any).profiles?.display_name || 'Usuário'}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {(comment as any).profiles?.email}
+                          </span>
+                        </div>
                         <span className="text-xs text-glass">
                           {new Date(comment.created_at).toLocaleString('pt-BR')}
                         </span>
                       </div>
-                      <p className="text-sm text-glass leading-relaxed">
+                      {/* Conteúdo do comentário */}
+                      <p className="text-sm text-foreground leading-relaxed">
                         {comment.comment}
                       </p>
                     </div>

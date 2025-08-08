@@ -32,6 +32,11 @@ import {
 import Papa from 'papaparse';
 import { animateIn } from '@/hooks/useGSAP';
 
+/* 
+ * Painel Administrativo com tipografia Inter/Outfit
+ * Para alterações de cores/estilos, consulte src/index.css
+ */
+
 export default function AdminDashboard() {
   const [envios, setEnvios] = useState<EnvioCapitulo[]>([]);
   const [filteredEnvios, setFilteredEnvios] = useState<EnvioCapitulo[]>([]);
@@ -285,6 +290,7 @@ export default function AdminDashboard() {
     });
   };
 
+  // Função para gerar iniciais do nome/email para avatar dos usuários
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -296,21 +302,35 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen gradient-dark">
-      {/* Header */}
-      <header className="glass border-b border-glass-border">
+      {/* Header - Cor igual ao background da página inicial + espaço para logo */}
+      <header className="border-b border-glass-border" style={{ backgroundColor: 'hsl(0 0% 8%)' }}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <FileText className="h-8 w-8 text-editorial" />
-              <div>
-                <span className="text-xl font-bold gradient-primary bg-clip-text text-transparent">Literare Books</span>
-                <p className="text-sm text-glass">Painel Administrativo</p>
+            <div className="flex items-center space-x-4">
+              {/* Espaço para logo da empresa */}
+              <div className="flex items-center space-x-2">
+                <FileText className="h-8 w-8 text-editorial" />
+                <div>
+                  <span className="text-xl font-bold gradient-primary bg-clip-text text-transparent">
+                    {/* Para alterar: substitua por <img src="/logo.png" alt="Logo" className="h-8" /> */}
+                    Espaço para Logo
+                  </span>
+                  <p className="text-sm text-glass">Painel Administrativo</p>
+                </div>
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-glass">
-                {user?.email}
-              </span>
+              {/* Avatar do usuário administrador */}
+              <div className="flex items-center space-x-2">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                    {getInitials(user?.email || '')}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm text-glass">
+                  {user?.email}
+                </span>
+              </div>
               <Button variant="outline" onClick={signOut} className="glass-button glass-hover border-editorial/30">
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair

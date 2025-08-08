@@ -1,0 +1,12 @@
+<!-- 
+  Placeholder para logo da empresa
+  Para usar: substitua este arquivo pelo logo real da empresa
+  Formatos recomendados: SVG, PNG (com fundo transparente)
+  Tamanhos: 200x60px ou similar
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60" fill="none">
+  <rect width="200" height="60" rx="8" fill="hsl(38 100% 55%)" fill-opacity="0.1" stroke="hsl(38 100% 55%)" stroke-width="2" stroke-dasharray="4 4"/>
+  <text x="100" y="35" text-anchor="middle" fill="hsl(38 100% 55%)" font-family="Inter, sans-serif" font-size="14" font-weight="600">
+    LOGO DA EMPRESA
+  </text>
+</svg>
