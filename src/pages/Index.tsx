@@ -6,10 +6,16 @@ import { BookOpen, FileText, Users, Award } from 'lucide-react';
 import * as THREE from 'three';
 import BIRDS from 'vanta/dist/vanta.birds.min';
 
+// Interface para tipar o objeto retornado pelo Vanta.js
+interface VantaEffect {
+  destroy: () => void;
+}
+
 const Index = () => {
   const heroRef = useRef<HTMLDivElement>(null);
   const vantaRef = useRef<HTMLDivElement>(null);
-  const [vantaEffect, setVantaEffect] = useState<any>(null);
+  // Estado com tipagem mais segura, evitando o uso de 'any'
+  const [vantaEffect, setVantaEffect] = useState<VantaEffect | null>(null);
 
   useEffect(() => {
     if (heroRef.current) {
@@ -17,9 +23,11 @@ const Index = () => {
     }
   }, []);
 
+  // CORRIGIDO: Este useEffect agora roda apenas uma vez, na montagem do componente.
   useEffect(() => {
-    if (!vantaEffect && vantaRef.current) {
-      const effect = BIRDS({
+    let effect: VantaEffect | null = null;
+    if (vantaRef.current) {
+      effect = BIRDS({
         el: vantaRef.current,
         THREE,
         mouseControls: true,
@@ -37,10 +45,14 @@ const Index = () => {
       setVantaEffect(effect);
     }
 
+    // A função de limpeza é chamada quando o componente é desmontado
     return () => {
-      if (vantaEffect) vantaEffect.destroy();
+      // Usamos a variável 'effect' da closure para garantir que estamos destruindo a instância correta
+      if (effect) {
+        effect.destroy();
+      }
     };
-  }, [vantaEffect]);
+  }, []); // <-- Array de dependências vazio para executar apenas uma vez
 
   return (
     <div className="min-h-screen gradient-dark relative">
