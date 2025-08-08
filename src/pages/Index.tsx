@@ -1,45 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { animateIn } from '@/hooks/useGSAP';
 import { BookOpen, FileText, Users, Award } from 'lucide-react';
-import * as THREE from 'three';
-import BIRDS from 'vanta/dist/vanta.birds.min';
 
 const Index = () => {
   const heroRef = useRef<HTMLDivElement>(null);
-  const vantaRef = useRef(null);
-  const [vantaEffect, setVantaEffect] = useState<any>(null);
 
   useEffect(() => {
     if (heroRef.current) {
       animateIn(Array.from(heroRef.current.children), { delay: 0.15 });
     }
   }, []);
-
-  useEffect(() => {
-    if (!vantaEffect) {
-      setVantaEffect(
-        BIRDS({
-          el: vantaRef.current,
-          mouseControls: true,
-          touchControls: true,
-          gyroControls: false,
-          minHeight: 200,
-          minWidth: 200,
-          scale: 1,
-          scaleMobile: 1,
-          background: 'transparent', // Fundo transparente para sobrepor o background atual
-          color1: 0xff9200,
-          color2: 0xff9200,
-          quantity: 4,
-        })
-      );
-    }
-    return () => {
-      if (vantaEffect) vantaEffect.destroy();
-    };
-  }, [vantaEffect]);
 
   return (
     <div className="min-h-screen gradient-dark relative">
@@ -50,21 +22,6 @@ const Index = () => {
           backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--editorial-orange)) 1px, transparent 0)`,
           backgroundSize: '40px 40px',
           zIndex: 0,
-        }}
-      />
-
-      {/* Vanta Birds effect div */}
-      <div
-        ref={vantaRef}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          zIndex: 10, // acima do background, mas abaixo do conteúdo
-          pointerEvents: 'none', // para não bloquear cliques
-          backgroundColor: 'transparent',
         }}
       />
 
