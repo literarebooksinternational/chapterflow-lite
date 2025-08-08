@@ -29,7 +29,7 @@ export default function SubmitChapter() {
                 <Button variant="ghost">Instruções</Button>
               </Link>
               <Link to="/admin">
-                <Button variant="outline">Área Administrativa</Button>
+                <Button variant="outline">Área Editorial</Button>
               </Link>
             </nav>
           </div>
@@ -43,7 +43,7 @@ export default function SubmitChapter() {
             Envie seu <span className="text-editorial">Capítulo</span>
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Sistema moderno e seguro para envio de capítulos. 
+            Sistema Literare para envio de capítulos. 
             Centralize seus envios e mantenha tudo organizado.
           </p>
           
@@ -52,7 +52,7 @@ export default function SubmitChapter() {
               <FileText className="h-12 w-12 text-editorial mb-4" />
               <h3 className="font-semibold mb-2">Fácil de usar</h3>
               <p className="text-sm text-muted-foreground text-center">
-                Interface intuitiva para envio rápido e eficiente
+                Envio rápido e eficiente para o Editorial
               </p>
             </div>
             
@@ -86,7 +86,7 @@ export default function SubmitChapter() {
       <footer className="bg-background text-foreground py-8 mt-16 border-t border-glass-border">
         <div className="container mx-auto px-4 text-center">
           <p className="text-sm">
-            © 2024 Literare Books. Todos os direitos reservados.
+            © 2025 Literare Books. Todos os direitos reservados.
           </p>
         </div>
       </footer>
