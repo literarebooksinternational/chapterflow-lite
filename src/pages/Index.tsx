@@ -8,7 +8,7 @@ import BIRDS from 'vanta/dist/vanta.birds.min';
 
 const Index = () => {
   const heroRef = useRef<HTMLDivElement>(null);
-  const vantaRef = useRef(null);
+  const vantaRef = useRef<HTMLDivElement>(null);
   const [vantaEffect, setVantaEffect] = useState<any>(null);
 
   useEffect(() => {
@@ -18,25 +18,25 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    if (!vantaEffect) {
-      setVantaEffect(
-        BIRDS({
-          el: vantaRef.current,
-          THREE: THREE, 
-          mouseControls: true,
-          touchControls: true,
-          gyroControls: false,
-          minHeight: 200,
-          minWidth: 200,
-          scale: 1,
-          scaleMobile: 1,
-          backgroundAlpha: 0, // usar backgroundAlpha no lugar de background: 'transparent'
-          color1: 0xff9200,
-          color2: 0xff9200,
-          quantity: 4,
-        })
-      );
+    if (!vantaEffect && vantaRef.current) {
+      const effect = BIRDS({
+        el: vantaRef.current,
+        THREE,
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200,
+        minWidth: 200,
+        scale: 1,
+        scaleMobile: 1,
+        backgroundAlpha: 0,
+        color1: 0xff9200,
+        color2: 0xff9200,
+        quantity: 4,
+      });
+      setVantaEffect(effect);
     }
+
     return () => {
       if (vantaEffect) vantaEffect.destroy();
     };
@@ -54,17 +54,13 @@ const Index = () => {
         }}
       />
 
-      {/* Vanta Birds effect div */}
+      {/* Vanta Birds */}
       <div
         ref={vantaRef}
+        className="absolute inset-0"
         style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          zIndex: 10, // acima do background, mas abaixo do conteúdo
-          pointerEvents: 'none', // para não bloquear cliques
+          zIndex: 10,
+          pointerEvents: 'none',
           backgroundColor: 'transparent',
         }}
       />
@@ -72,7 +68,7 @@ const Index = () => {
       {/* Conteúdo principal */}
       <div ref={heroRef} className="relative z-20 text-center max-w-4xl mx-auto px-4 py-20">
         {/* Logo */}
-        <div className="glass-card mb-8 inline-flex items-center justify-center p-6 relative z-20">
+        <div className="glass-card mb-8 inline-flex items-center justify-center p-6">
           <img
             src="https://i.postimg.cc/Z5jxcX97/logoliterare.png"
             alt="Logo da Empresa"
@@ -80,21 +76,21 @@ const Index = () => {
           />
         </div>
 
-        {/* Main Heading */}
-        <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight relative z-20">
+        {/* Título */}
+        <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
           Editorial
           <span className="block gradient-primary bg-clip-text text-transparent">
             Literare Books
           </span>
         </h1>
 
-        {/* Subtitle */}
-        <p className="text-xl md:text-2xl text-glass mb-12 max-w-2xl mx-auto leading-relaxed relative z-20">
+        {/* Subtítulo */}
+        <p className="text-xl md:text-2xl text-glass mb-12 max-w-2xl mx-auto leading-relaxed">
           Autoras e autores da Literare Books, enviem seus capítulos com praticidade e organização pelo formulário abaixo.
         </p>
 
-        {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 relative z-20">
+        {/* Botões CTA */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
           <Link to="/submit">
             <Button className="glass-button glass-hover text-lg px-8 py-4 h-auto">
               <FileText className="h-5 w-5 mr-2" />
@@ -113,12 +109,9 @@ const Index = () => {
           </Link>
         </div>
 
-        {/* Cards de Funcionalidades */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20 relative z-20">
-          <div
-            className="glass-card glass-hover text-center"
-            style={{ backgroundColor: '#131313' }}
-          >
+        {/* Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20">
+          <div className="glass-card glass-hover text-center" style={{ backgroundColor: '#131313' }}>
             <div className="gradient-primary w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
               <FileText className="h-6 w-6 text-white" />
             </div>
@@ -128,10 +121,7 @@ const Index = () => {
             </p>
           </div>
 
-          <div
-            className="glass-card glass-hover text-center"
-            style={{ backgroundColor: '#131313' }}
-          >
+          <div className="glass-card glass-hover text-center" style={{ backgroundColor: '#131313' }}>
             <div className="gradient-primary w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
               <Users className="h-6 w-6 text-white" />
             </div>
@@ -141,10 +131,7 @@ const Index = () => {
             </p>
           </div>
 
-          <div
-            className="glass-card glass-hover text-center"
-            style={{ backgroundColor: '#131313' }}
-          >
+          <div className="glass-card glass-hover text-center" style={{ backgroundColor: '#131313' }}>
             <div className="gradient-primary w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
               <Award className="h-6 w-6 text-white" />
             </div>
@@ -156,19 +143,13 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Floating Elements */}
+      {/* Floating Pulses */}
       <div className="absolute top-20 left-10 w-20 h-20 gradient-primary rounded-full opacity-20 animate-pulse z-10" />
-      <div
-        className="absolute bottom-20 right-10 w-16 h-16 gradient-primary rounded-full opacity-10 animate-pulse z-10"
-        style={{ animationDelay: '1s' }}
-      />
-      <div
-        className="absolute top-1/2 left-5 w-12 h-12 gradient-primary rounded-full opacity-15 animate-pulse z-10"
-        style={{ animationDelay: '2s' }}
-      />
+      <div className="absolute bottom-20 right-10 w-16 h-16 gradient-primary rounded-full opacity-10 animate-pulse z-10" style={{ animationDelay: '1s' }} />
+      <div className="absolute top-1/2 left-5 w-12 h-12 gradient-primary rounded-full opacity-15 animate-pulse z-10" style={{ animationDelay: '2s' }} />
 
-      {/* Admin Access Footer */}
-      <div className="fixed bottom-6 right-6 relative z-20">
+      {/* Footer */}
+      <div className="fixed bottom-6 right-6 z-20">
         <Link to="/admin">
           <Button
             variant="outline"
