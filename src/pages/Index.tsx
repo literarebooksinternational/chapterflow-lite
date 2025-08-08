@@ -29,22 +29,24 @@ const Index = () => {
           <div ref={heroRef} className="text-center max-w-4xl mx-auto">
             {/* Espaço para Logo da Empresa */}
             <div className="glass-card mb-8 inline-flex items-center justify-center p-6">
-              {/* 
-                Para alterar o logo: 
-                1. Substitua o comentário abaixo por: <img src="/caminho-para-logo.png" alt="Logo da Empresa" className="h-12 w-auto" />
-                2. Ajuste a altura (h-12) conforme necessário
-              */}
+              { 
+                <img
+                  src="https://i.postimg.cc/Z5jxcX97/logoliterare.png"
+                  alt="Logo da Empresa"
+                  className="h-12 w-auto"
+                />
+              }
               <div className="flex items-center space-x-3 text-editorial text-2xl font-bold">
                 <BookOpen className="h-8 w-8" />
-                <span>Espaço para Logo</span>
+                <span>/span>*/
               </div>
             </div>
 
             {/* Main Heading */}
             <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
-              Sistema Editorial
+                Editorial
               <span className="block gradient-primary bg-clip-text text-transparent">
-                Moderno
+                Literare Books
               </span>
             </h1>
 
@@ -76,9 +78,9 @@ const Index = () => {
                 <div className="gradient-primary w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                   <FileText className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-xl font-bold mb-2">Envio Simplificado</h3>
+                <h3 className="text-xl font-bold mb-2">Envie Seu Capítulo</h3>
                 <p className="text-glass">
-                  Formulário intuitivo para envio de capítulos com validação automática.
+                  Envie-o rápido e fácil pelo nosso formulário, garantindo que tudo chegue certo ao editorial.
                 </p>
               </div>
 
@@ -86,9 +88,9 @@ const Index = () => {
                 <div className="gradient-primary w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Users className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-xl font-bold mb-2">Gestão Colaborativa</h3>
+                <h3 className="text-xl font-bold mb-2">Processo Editorial</h3>
                 <p className="text-glass">
-                  Painel administrativo completo para gerenciar autores e revisões.
+                 Seu capítulo passa por revisão e diagramação cuidadosa.
                 </p>
               </div>
 
@@ -96,9 +98,9 @@ const Index = () => {
                 <div className="gradient-primary w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Award className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-xl font-bold mb-2">Controle Total</h3>
+                <h3 className="text-xl font-bold mb-2">Fique conectado com o editorial</h3>
                 <p className="text-glass">
-                  Acompanhe status, adicione comentários e exporte relatórios.
+                  Se preciso, entraremos em contato para ajustes ou dúvidas.
                 </p>
               </div>
             </div>
