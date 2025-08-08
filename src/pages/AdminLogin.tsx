@@ -85,7 +85,7 @@ export default function AdminLogin() {
         <Card className="editorial-shadow">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">
-              Área <span className="text-editorial">Administrativa</span>
+              Bem-vindo <span className="text-editorial">Editor!</span>
             </CardTitle>
             <p className="text-center text-muted-foreground">
               Acesso restrito à equipe editorial
@@ -137,10 +137,10 @@ export default function AdminLogin() {
         </Card>
 
         <div className="text-center mt-6 text-sm text-muted-foreground">
-          <p>Acesso restrito aos e-mails autorizados:</p>
+          <p>Acesso restrito a equipe Literare Books</p>
           <div className="space-y-1 mt-2">
-            <p>comunicacao@literarebooks.com.br</p>
-            <p>julyana@literarebooks.com.br</p>
+            <p>Editorial</p>
+            <p>@Literarebooks</p>
           </div>
         </div>
       </div>
