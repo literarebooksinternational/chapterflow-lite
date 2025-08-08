@@ -22,6 +22,7 @@ const Index = () => {
       setVantaEffect(
         BIRDS({
           el: vantaRef.current,
+          THREE: THREE, 
           mouseControls: true,
           touchControls: true,
           gyroControls: false,
@@ -29,7 +30,7 @@ const Index = () => {
           minWidth: 200,
           scale: 1,
           scaleMobile: 1,
-          background: 'transparent', // Fundo transparente para sobrepor o background atual
+          backgroundAlpha: 0, // usar backgroundAlpha no lugar de background: 'transparent'
           color1: 0xff9200,
           color2: 0xff9200,
           quantity: 4,
