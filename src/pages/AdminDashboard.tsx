@@ -308,14 +308,14 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
               {/* Espaço para logo da empresa */}
-              <div className="flex items-center space-x-2">
-                <FileText className="h-8 w-8 text-editorial" />
-                <div>
-                  <span className="text-xl font-bold gradient-primary bg-clip-text text-transparent">
-                    {/* Para alterar: substitua por <img src="/logo.png" alt="Logo" className="h-8" /> */}
-                    Espaço para Logo
-                  </span>
-                  <p className="text-sm text-glass">Painel Administrativo</p>
+            <div className="flex items-center space-x-2">
+              <img
+                src="https://i.postimg.cc/Z5jxcX97/logoliterare.png"
+                alt="Logo da Literare Books"
+                className="h-8 w-auto"
+              />
+              </div>
+                  <p className="text-sm text-glass">Painel Editorial</p>
                 </div>
               </div>
             </div>
