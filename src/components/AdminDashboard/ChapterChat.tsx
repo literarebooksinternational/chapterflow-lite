@@ -46,7 +46,7 @@ export default function ChapterChat({ chapterId, isOpen, onClose }: ChapterChatP
         .from('chapter_comments')
         .select(`
           *,
-          profiles!chapter_comments_user_id_fkey(*)
+          profiles!user_id(*)
         `)
         .eq('chapter_id', chapterId)
         .order('created_at', { ascending: true });

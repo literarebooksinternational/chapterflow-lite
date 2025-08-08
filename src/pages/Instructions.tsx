@@ -16,8 +16,8 @@ export default function Instructions() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      {/* Header - com cor do background do site */}
+      <header className="bg-background shadow-sm border-b border-glass-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">

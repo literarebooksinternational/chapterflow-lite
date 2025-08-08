@@ -16,8 +16,8 @@ export default function SubmitChapter() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      {/* Header - com cor do background do site */}
+      <header className="bg-background shadow-sm border-b border-glass-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
@@ -82,8 +82,8 @@ export default function SubmitChapter() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-foreground text-background py-8 mt-16">
+      {/* Footer - com cor do background do site */}
+      <footer className="bg-background text-foreground py-8 mt-16 border-t border-glass-border">
         <div className="container mx-auto px-4 text-center">
           <p className="text-sm">
             © 2024 Literare Books. Todos os direitos reservados.
