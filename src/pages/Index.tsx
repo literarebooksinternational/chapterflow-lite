@@ -38,7 +38,7 @@ const Index = () => {
               }
               <div className="flex items-center space-x-3 text-editorial text-2xl font-bold">
                 <BookOpen className="h-8 w-8" />
-                <span>/span>*/
+                <span>/span>
               </div>
             </div>
 
