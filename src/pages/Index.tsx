@@ -1,22 +1,15 @@
-import { useEffect, useRef } from 'react'; // Removido o useState
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { animateIn } from '@/hooks/useGSAP';
 import { BookOpen, FileText, Users, Award } from 'lucide-react';
 import * as THREE from 'three';
-// Certifique-se de que o tipo VantaEffect está definido se você o tiver em outro lugar
-// ou importe-o se a biblioteca fornecer. Caso contrário, podemos inferi-lo.
 import BIRDS from 'vanta/dist/vanta.birds.min';
-
-// Interface para dar um tipo ao efeito Vanta, tornando o código mais seguro
-interface VantaEffect {
-  destroy: () => void;
-}
 
 const Index = () => {
   const heroRef = useRef<HTMLDivElement>(null);
   const vantaRef = useRef<HTMLDivElement>(null);
-  // O useState para 'vantaEffect' foi removido, pois não é necessário.
+  const [vantaEffect, setVantaEffect] = useState<any>(null);
 
   useEffect(() => {
     if (heroRef.current) {
@@ -24,13 +17,9 @@ const Index = () => {
     }
   }, []);
 
-  // VERSÃO CORRIGIDA E MAIS ROBUSTA do useEffect para Vanta.js
   useEffect(() => {
-    let vantaEffect: VantaEffect | undefined; // Usamos uma variável local
-
-    // Verificamos se a referência ao DIV existe antes de inicializar
-    if (vantaRef.current) {
-      vantaEffect = BIRDS({
+    if (!vantaEffect && vantaRef.current) {
+      const effect = BIRDS({
         el: vantaRef.current,
         THREE,
         mouseControls: true,
@@ -45,16 +34,13 @@ const Index = () => {
         color2: 0xff9200,
         quantity: 4,
       });
+      setVantaEffect(effect);
     }
 
-    // A função de limpeza é retornada. Ela será chamada quando o componente for desmontado.
-    // Ela usa a variável 'vantaEffect' da closure para garantir que o efeito correto seja destruído.
     return () => {
-      if (vantaEffect) {
-        vantaEffect.destroy();
-      }
+      if (vantaEffect) vantaEffect.destroy();
     };
-  }, []); // O array de dependências vazio garante que isso rode apenas na montagem e desmontagem.
+  }, [vantaEffect]);
 
   return (
     <div className="min-h-screen gradient-dark relative">
