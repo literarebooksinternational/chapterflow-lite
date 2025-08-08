@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react'; // Removido o useState
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { animateIn } from '@/hooks/useGSAP';
 import { BookOpen, FileText, Users, Award } from 'lucide-react';
 import * as THREE from 'three';
+// Certifique-se de que o tipo VantaEffect está definido se você o tiver em outro lugar
+// ou importe-o se a biblioteca fornecer. Caso contrário, podemos inferi-lo.
 import BIRDS from 'vanta/dist/vanta.birds.min';
 
-// Interface para tipar o objeto retornado pelo Vanta.js
+// Interface para dar um tipo ao efeito Vanta, tornando o código mais seguro
 interface VantaEffect {
   destroy: () => void;
 }
@@ -14,8 +16,7 @@ interface VantaEffect {
 const Index = () => {
   const heroRef = useRef<HTMLDivElement>(null);
   const vantaRef = useRef<HTMLDivElement>(null);
-  // Estado com tipagem mais segura, evitando o uso de 'any'
-  const [vantaEffect, setVantaEffect] = useState<VantaEffect | null>(null);
+  // O useState para 'vantaEffect' foi removido, pois não é necessário.
 
   useEffect(() => {
     if (heroRef.current) {
@@ -23,11 +24,13 @@ const Index = () => {
     }
   }, []);
 
-  // CORRIGIDO: Este useEffect agora roda apenas uma vez, na montagem do componente.
+  // VERSÃO CORRIGIDA E MAIS ROBUSTA do useEffect para Vanta.js
   useEffect(() => {
-    let effect: VantaEffect | null = null;
+    let vantaEffect: VantaEffect | undefined; // Usamos uma variável local
+
+    // Verificamos se a referência ao DIV existe antes de inicializar
     if (vantaRef.current) {
-      effect = BIRDS({
+      vantaEffect = BIRDS({
         el: vantaRef.current,
         THREE,
         mouseControls: true,
@@ -42,17 +45,16 @@ const Index = () => {
         color2: 0xff9200,
         quantity: 4,
       });
-      setVantaEffect(effect);
     }
 
-    // A função de limpeza é chamada quando o componente é desmontado
+    // A função de limpeza é retornada. Ela será chamada quando o componente for desmontado.
+    // Ela usa a variável 'vantaEffect' da closure para garantir que o efeito correto seja destruído.
     return () => {
-      // Usamos a variável 'effect' da closure para garantir que estamos destruindo a instância correta
-      if (effect) {
-        effect.destroy();
+      if (vantaEffect) {
+        vantaEffect.destroy();
       }
     };
-  }, []); // <-- Array de dependências vazio para executar apenas uma vez
+  }, []); // O array de dependências vazio garante que isso rode apenas na montagem e desmontagem.
 
   return (
     <div className="min-h-screen gradient-dark relative">
