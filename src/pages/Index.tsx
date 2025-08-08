@@ -1,11 +1,21 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import * as THREE from 'three';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { animateIn } from '@/hooks/useGSAP';
 import { BookOpen, FileText, Users, Award } from 'lucide-react';
 
+// Declarando global para o Vanta
+declare global {
+  interface Window {
+    VANTA: any;
+  }
+}
+
 const Index = () => {
   const heroRef = useRef<HTMLDivElement>(null);
+  const vantaRef = useRef<HTMLDivElement>(null);
+  const [vantaEffect, setVantaEffect] = useState<any>(null);
 
   useEffect(() => {
     if (heroRef.current) {
@@ -13,21 +23,63 @@ const Index = () => {
     }
   }, []);
 
-  return (
-    <div className="min-h-screen gradient-dark">
-      {/* Hero Section */}
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--editorial-orange)) 1px, transparent 0)`,
-              backgroundSize: '40px 40px',
-            }}
-          />
-        </div>
+  useEffect(() => {
+    const loadScript = (src: string) =>
+      new Promise<void>((resolve, reject) => {
+        const existingScript = document.querySelector(`script[src="${src}"]`);
+        if (!existingScript) {
+          const script = document.createElement('script');
+          script.src = src;
+          script.async = true;
+          script.onload = () => resolve();
+          script.onerror = () => reject();
+          document.body.appendChild(script);
+        } else {
+          resolve();
+        }
+      });
 
+    const initVanta = async () => {
+      try {
+        await loadScript('https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js');
+
+        if (!vantaEffect && vantaRef.current && window.VANTA) {
+          const effect = window.VANTA.BIRDS({
+            el: vantaRef.current,
+            THREE,
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.0,
+            minWidth: 200.0,
+            scale: 1.0,
+            scaleMobile: 1.0,
+            background: 'linear-gradient(121deg, rgba(0,0,0,1) 0%, rgba(21,21,21,1) 38%, rgba(35,35,35,1) 100%)',
+            color1: 0xff9200,
+            color2: 0xff9200,
+            quantity: 4.0,
+          });
+          setVantaEffect(effect);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar o Vanta Birds:', error);
+      }
+    };
+
+    initVanta();
+
+    return () => {
+      if (vantaEffect) {
+        vantaEffect.destroy();
+      }
+    };
+  }, [vantaEffect]);
+
+  return (
+    <div ref={vantaRef} className="min-h-screen relative overflow-hidden">
+      {/* Conteúdo principal */}
+      <div className="relative min-h-screen flex items-center justify-center">
+        {/* Container do conteúdo */}
         <div className="container mx-auto px-4 py-20 relative z-10">
           <div ref={heroRef} className="text-center max-w-4xl mx-auto">
             {/* Logo */}
@@ -39,7 +91,7 @@ const Index = () => {
               />
             </div>
 
-            {/* Main Heading */}
+            {/* Título principal */}
             <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
               Editorial
               <span className="block gradient-primary bg-clip-text text-transparent">
@@ -47,12 +99,12 @@ const Index = () => {
               </span>
             </h1>
 
-            {/* Subtitle */}
+            {/* Subtítulo */}
             <p className="text-xl md:text-2xl text-glass mb-12 max-w-2xl mx-auto leading-relaxed">
               Autoras e autores da Literare Books, enviem seus capítulos com praticidade e organização pelo formulário abaixo.
             </p>
 
-            {/* CTA Buttons */}
+            {/* Botões CTA */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
               <Link to="/submit">
                 <Button className="glass-button glass-hover text-lg px-8 py-4 h-auto">
@@ -72,7 +124,7 @@ const Index = () => {
               </Link>
             </div>
 
-            {/* Cards de Funcionalidades */}
+            {/* Cards de funcionalidades */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20">
               <div
                 className="glass-card glass-hover text-center"
@@ -116,7 +168,7 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Floating Elements */}
+        {/* Elementos flutuantes */}
         <div className="absolute top-20 left-10 w-20 h-20 gradient-primary rounded-full opacity-20 animate-pulse" />
         <div
           className="absolute bottom-20 right-10 w-16 h-16 gradient-primary rounded-full opacity-10 animate-pulse"
@@ -128,7 +180,7 @@ const Index = () => {
         />
       </div>
 
-      {/* Admin Access Footer */}
+      {/* Footer com acesso editorial */}
       <div className="fixed bottom-6 right-6">
         <Link to="/admin">
           <Button
