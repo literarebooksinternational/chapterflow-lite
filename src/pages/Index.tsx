@@ -19,32 +19,29 @@ const Index = () => {
       <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--editorial-orange)) 1px, transparent 0)`,
-            backgroundSize: '40px 40px'
-          }} />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--editorial-orange)) 1px, transparent 0)`,
+              backgroundSize: '40px 40px',
+            }}
+          />
         </div>
 
         <div className="container mx-auto px-4 py-20 relative z-10">
           <div ref={heroRef} className="text-center max-w-4xl mx-auto">
-            {/* Espaço para Logo da Empresa */}
+            {/* Logo */}
             <div className="glass-card mb-8 inline-flex items-center justify-center p-6">
-              { 
-                <img
-                  src="https://i.postimg.cc/Z5jxcX97/logoliterare.png"
-                  alt="Logo da Empresa"
-                  className="h-12 w-auto"
-                />
-              }
-              <div className="flex items-center space-x-3 text-editorial text-2xl font-bold">
-                <BookOpen className="h-8 w-8" />
-                {/* <span>Espaço para Logo</span> */}
-              </div>
+              <img
+                src="https://i.postimg.cc/Z5jxcX97/logoliterare.png"
+                alt="Logo da Empresa"
+                className="h-12 w-auto"
+              />
             </div>
 
             {/* Main Heading */}
             <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
-                Editorial
+              Editorial
               <span className="block gradient-primary bg-clip-text text-transparent">
                 Literare Books
               </span>
@@ -63,18 +60,24 @@ const Index = () => {
                   Enviar Capítulo
                 </Button>
               </Link>
-              
+
               <Link to="/instructions">
-                <Button variant="outline" className="glass-button glass-hover text-lg px-8 py-4 h-auto border-editorial/30 text-editorial hover:bg-editorial/10">
+                <Button
+                  variant="outline"
+                  className="glass-button glass-hover text-lg px-8 py-4 h-auto border-editorial/30 text-editorial hover:bg-editorial/10"
+                >
                   <BookOpen className="h-5 w-5 mr-2" />
                   Ver Instruções
                 </Button>
               </Link>
             </div>
 
-            {/* Cards de Funcionalidades - Background alterado para #131313 */}
+            {/* Cards de Funcionalidades */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20">
-              <div className="glass-card glass-hover text-center" style={{ backgroundColor: '#131313' }}>
+              <div
+                className="glass-card glass-hover text-center"
+                style={{ backgroundColor: '#131313' }}
+              >
                 <div className="gradient-primary w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                   <FileText className="h-6 w-6 text-white" />
                 </div>
@@ -84,17 +87,23 @@ const Index = () => {
                 </p>
               </div>
 
-              <div className="glass-card glass-hover text-center" style={{ backgroundColor: '#131313' }}>
+              <div
+                className="glass-card glass-hover text-center"
+                style={{ backgroundColor: '#131313' }}
+              >
                 <div className="gradient-primary w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Users className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="text-xl font-bold mb-2">Processo Editorial</h3>
                 <p className="text-glass">
-                 Seu capítulo passa por revisão e diagramação cuidadosa.
+                  Seu capítulo passa por revisão e diagramação cuidadosa.
                 </p>
               </div>
 
-              <div className="glass-card glass-hover text-center" style={{ backgroundColor: '#131313' }}>
+              <div
+                className="glass-card glass-hover text-center"
+                style={{ backgroundColor: '#131313' }}
+              >
                 <div className="gradient-primary w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Award className="h-6 w-6 text-white" />
                 </div>
@@ -109,14 +118,23 @@ const Index = () => {
 
         {/* Floating Elements */}
         <div className="absolute top-20 left-10 w-20 h-20 gradient-primary rounded-full opacity-20 animate-pulse" />
-        <div className="absolute bottom-20 right-10 w-16 h-16 gradient-primary rounded-full opacity-10 animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-5 w-12 h-12 gradient-primary rounded-full opacity-15 animate-pulse" style={{ animationDelay: '2s' }} />
+        <div
+          className="absolute bottom-20 right-10 w-16 h-16 gradient-primary rounded-full opacity-10 animate-pulse"
+          style={{ animationDelay: '1s' }}
+        />
+        <div
+          className="absolute top-1/2 left-5 w-12 h-12 gradient-primary rounded-full opacity-15 animate-pulse"
+          style={{ animationDelay: '2s' }}
+        />
       </div>
 
       {/* Admin Access Footer */}
       <div className="fixed bottom-6 right-6">
         <Link to="/admin">
-          <Button variant="outline" className="glass-button glass-hover border-editorial/30 text-editorial hover:bg-editorial/10">
+          <Button
+            variant="outline"
+            className="glass-button glass-hover border-editorial/30 text-editorial hover:bg-editorial/10"
+          >
             Acesso Editorial
           </Button>
         </Link>
