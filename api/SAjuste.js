@@ -16,12 +16,8 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export default async function handler(req, res) {
+export async function solicitarAjustes(req, res) {
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ success: false, message: "Método não permitido" });
-    }
-
     const { capituloId, observacao_admin } = req.body;
 
     if (!capituloId || !observacao_admin) {

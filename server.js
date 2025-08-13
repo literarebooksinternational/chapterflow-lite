@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { solicitarAjustes } from "./api/SAjuste.js"; // ✅ certinho com base na sua estrutura
+import { solicitarAjustes } from "./api/SAjuste.js";
 
 dotenv.config();
 
@@ -13,7 +13,6 @@ app.use(express.json());
 
 app.post("/api/SAjustes", solicitarAjustes);
 
-// Rota simples para teste
 app.get("/", (req, res) => {
   res.send("Servidor backend está rodando!");
 });
