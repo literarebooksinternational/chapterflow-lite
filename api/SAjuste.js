@@ -1,4 +1,22 @@
-export async function solicitarAjustes(req, res) {
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+import { createClient } from "@supabase/supabase-js";
+
+dotenv.config();
+
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
+const transporter = nodemailer.createTransport({
+  host: "smtp.literarebooks.com.br",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
+export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ success: false, message: "Método não permitido" });

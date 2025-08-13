@@ -284,7 +284,7 @@ export default function AdminDashboard() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/SAjustes", {
+      const response = await fetch("api/SAjustes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
