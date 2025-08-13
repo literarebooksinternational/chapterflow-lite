@@ -4,8 +4,13 @@ import { createClient } from "@supabase/supabase-js";
 
 dotenv.config();
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+// Inicializa Supabase
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
 
+// Configuração do nodemailer
 const transporter = nodemailer.createTransport({
   host: "smtp.literarebooks.com.br",
   port: 587,
@@ -16,14 +21,22 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Função de solicitação de ajustes
 export async function solicitarAjustes(req, res) {
   try {
+    // Verifica se é método POST
+    if (req.method !== "POST") {
+      return res.status(405).json({ success: false, message: "Método não permitido" });
+    }
+
     const { capituloId, observacao_admin } = req.body;
 
+    // Validação dos dados
     if (!capituloId || !observacao_admin) {
       return res.status(400).json({ success: false, message: "Dados inválidos no corpo da requisição" });
     }
 
+    // Busca o capítulo no Supabase
     const { data: capitulo, error } = await supabase
       .from("capitulos")
       .select(`
@@ -44,11 +57,13 @@ export async function solicitarAjustes(req, res) {
       return res.status(500).json({ success: false, message: "Autor não encontrado." });
     }
 
+    // Atualiza observação do capítulo
     await supabase
       .from("capitulos")
       .update({ observacao_admin })
       .eq("id", capituloId);
 
+    // Envia o e-mail ao autor
     await transporter.sendMail({
       from: `"Literare Books" <${process.env.SMTP_USER}>`,
       to: autorEmail,
