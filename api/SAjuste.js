@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 dotenv.config();
 
 // Usando a chave de serviço para operações que requerem permissões elevadas
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 const transporter = nodemailer.createTransport({
   host: "smtp.literarebooks.com.br",
