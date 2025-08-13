@@ -4,7 +4,8 @@ import { createClient } from "@supabase/supabase-js";
 
 dotenv.config();
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+// Usando a chave de serviço para operações que requerem permissões elevadas
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 const transporter = nodemailer.createTransport({
   host: "smtp.literarebooks.com.br",
@@ -48,10 +49,15 @@ export async function solicitarAjustes(req, res) {
       return res.status(500).json({ success: false, message: "Autor não encontrado." });
     }
 
-    await supabase
+    // Atualizando o status e a observação do capítulo
+    const { error: updateError } = await supabase
       .from("capitulos")
-      .update({ observacao_admin })
+      .update({ observacao_admin, status: "Solicitar Ajustes" })
       .eq("id", capituloId);
+
+    if (updateError) {
+      return res.status(500).json({ success: false, message: "Erro ao atualizar o capítulo." });
+    }
 
     await transporter.sendMail({
       from: `"Literare Books" <${process.env.SMTP_USER}>`,
