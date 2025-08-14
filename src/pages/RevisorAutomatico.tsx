@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from "@/components/ui/progress";
 import { useToast } from '@/hooks/use-toast';
 import { FileText, Upload, Download, ListChecks, AlertCircle } from 'lucide-react';
 import { animateIn } from '@/hooks/useGSAP';
+
+// --- NOVAS IMPORTAÇÕES ---
+import BookLoader from '@/components/AdminDashboard/BookLoader'; // Importa o novo componente de loader
 
 interface Correction {
   original: string;
@@ -21,7 +23,8 @@ export const RevisorAutomatico = () => {
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);
+  // O estado 'progress' não é mais necessário para a UI, mas podemos mantê-lo para a lógica se quisermos
+  // const [progress, setProgress] = useState(0); 
   const [corrections, setCorrections] = useState<Correction[]>([]);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +43,6 @@ export const RevisorAutomatico = () => {
             setCorrections([]);
             setDownloadUrl(null);
             setError(null);
-            setProgress(0);
         } else {
             toast({
                 title: "Arquivo Inválido",
@@ -52,7 +54,6 @@ export const RevisorAutomatico = () => {
     }
   };
 
-  // ESTA É A FUNÇÃO QUE COMUNICA COM A API FLASK
   const handleReview = async () => {
     if (!selectedFile) {
       toast({ title: "Nenhum arquivo selecionado", description: "Escolha um arquivo .docx para revisar.", variant: "destructive" });
@@ -61,36 +62,28 @@ export const RevisorAutomatico = () => {
 
     setIsProcessing(true);
     setError(null);
-    setProgress(30);
 
     const formData = new FormData();
     formData.append('file', selectedFile);
 
     try {
-      // A chamada 'fetch' para o endpoint do seu servidor Python (Flask)
+      // ATENÇÃO: Lembre-se de trocar esta URL pela URL do seu backend em produção (Render.com)
       const response = await fetch('http://127.0.0.1:5000/revisar-documento', {
         method: 'POST',
         body: formData,
       });
-
-      setProgress(70);
 
       if (!response.ok) {
         const errData = await response.json();
         throw new Error(errData.error || 'Ocorreu um erro no servidor.');
       }
 
-      // 1. Extrai o relatório do header customizado
       const reportHeader = response.headers.get('X-Corrections-Report');
-      if (reportHeader) {
-        setCorrections(JSON.parse(reportHeader));
-      }
+      if (reportHeader) { setCorrections(JSON.parse(reportHeader)); }
 
-      // 2. Cria uma URL para o arquivo (blob) retornado no corpo da resposta
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       setDownloadUrl(url);
-      setProgress(100);
 
       toast({
         title: "Revisão Concluída!",
@@ -101,7 +94,6 @@ export const RevisorAutomatico = () => {
       const errorMessage = err instanceof Error ? err.message : "Erro de conexão. Verifique se o servidor Python está rodando.";
       setError(`Falha na revisão: ${errorMessage}`);
       toast({ title: "Erro na Revisão", description: errorMessage, variant: "destructive" });
-      setProgress(0);
     } finally {
       setIsProcessing(false);
     }
@@ -114,8 +106,22 @@ export const RevisorAutomatico = () => {
           <CardHeader><CardTitle className="text-xl flex items-center"><ListChecks className="mr-2 h-6 w-6 text-editorial" />Revisor Automático de Documentos</CardTitle></CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2"><Label htmlFor="doc-upload">1. Enviar arquivo Word (.docx)</Label><Input id="doc-upload" type="file" onChange={handleFileChange} accept=".docx" className="cursor-pointer"/></div>
-            <Button onClick={handleReview} disabled={!selectedFile || isProcessing} className="w-full gradient-button">{isProcessing ? 'Revisando...' : 'Iniciar Revisão'}<Upload className="ml-2 h-4 w-4" /></Button>
-            {isProcessing && (<div className="space-y-2"><Label>Andamento</Label><Progress value={progress} className="w-full" /></div>)}
+            <Button onClick={handleReview} disabled={!selectedFile || isProcessing} className="w-full gradient-button">
+              {isProcessing ? (
+                <span>Revisando...</span> // Texto muda para indicar processamento
+              ) : (
+                <>Iniciar Revisão <Upload className="ml-2 h-4 w-4" /></>
+              )}
+            </Button>
+
+            {/* --- SEÇÃO DO LOADER ATUALIZADA --- */}
+            {isProcessing && (
+              <div className="space-y-2">
+                <Label>Andamento</Label>
+                <BookLoader />
+              </div>
+            )}
+            
             {error && (<div className="flex items-center bg-destructive/10 border border-destructive/50 text-destructive p-3 rounded-lg"><AlertCircle className="h-5 w-5 mr-3" /><p className="text-sm font-semibold">{error}</p></div>)}
             {downloadUrl && (<div className="border-t border-glass-border pt-6 space-y-4 animate-in fade-in-0 slide-in-from-bottom-5 duration-500"><h3 className="text-lg font-semibold text-foreground">2. Download do Arquivo Corrigido</h3><p className="text-sm text-muted-foreground">O arquivo foi processado. As alterações estão realçadas em amarelo para sua revisão.</p><Button asChild className="w-full"><a href={downloadUrl} download={`revisado_${selectedFile?.name}`}><Download className="mr-2 h-4 w-4" />Baixar Arquivo Revisado</a></Button></div>)}
           </CardContent>
