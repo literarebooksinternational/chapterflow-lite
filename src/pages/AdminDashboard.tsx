@@ -176,7 +176,11 @@ export default function AdminDashboard() {
     if (!selectedChapterId) return;
     setIsSubmitting(true);
     try {
-      const response = await fetch("https://editorial-literare.onrender.com/api/SAjustes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ capituloId: selectedChapterId, observacao_admin: adjustmentObservation, }), });
+      const response = await fetch("https://editorial-literare.onrender.com/api/SAjustes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+  id: selectedChapterId,  // Isso precisa estar exatamente assim
+  observacao_admin: adjustmentObservation,
+}),
+
       const data = await response.json();
       if (response.ok && data.success) {
         toast({ title: "Sucesso!", description: "Autor notificado e capítulo atualizado com sucesso.", });

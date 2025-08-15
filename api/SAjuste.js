@@ -1,11 +1,10 @@
+console.log("📩 Corpo da requisição:", req.body);
+
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-import { createClient } from "@supabase/supabase-js";
+import supabase from "../../lib/supabaseClient.js";
 
 dotenv.config();
-
-// Usando a chave de serviço para operações que requerem permissões elevadas
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 const transporter = nodemailer.createTransport({
   host: "smtp.literarebooks.com.br",
@@ -19,62 +18,83 @@ const transporter = nodemailer.createTransport({
 
 export async function solicitarAjustes(req, res) {
   try {
+    console.log("📩 Requisição recebida:", req.body);
+
     if (req.method !== "POST") {
-      return res.status(405).json({ success: false, message: "Método não permitido" });
+      return res
+        .status(405)
+        .json({ success: false, message: "Método não permitido" });
     }
 
-    const { capituloId, observacao_admin } = req.body;
+    const { id, observacao_admin } = req.body;
 
-    if (!capituloId || !observacao_admin) {
-      return res.status(400).json({ success: false, message: "Dados inválidos no corpo da requisição" });
-    }
+      if (!id || !observacao_admin) {
+      return res.status(400).json({
+      success: false,
+      message: "ID do capítulo e observacao_admin são obrigatórios",
+        });
+      }
 
-    const { data: capitulo, error } = await supabase
-      .from("capitulos")
-      .select(`
-        id, url_arquivo, status, observacao_admin, comentario_adicional, created_at, updated_at, responsible_user_id,
-        autor:autor_id(email, nome)
-      `)
-      .eq("id", capituloId)
+    const { data: capitulo, error: fetchError } = await supabase
+      .from("envios_capitulos")
+      .select("*")
+      .eq("id", id)
       .single();
 
-    if (error || !capitulo) {
-      return res.status(404).json({ success: false, message: "Capítulo não encontrado" });
+    if (fetchError || !capitulo) {
+      console.error("❌ Erro ao buscar capítulo:", fetchError);
+      return res
+        .status(404)
+        .json({ success: false, message: "Capítulo não encontrado" });
     }
 
-    const autorEmail = capitulo.autor?.email;
-    const autorNome = capitulo.autor?.nome;
+    const { email, nome, titulo_capitulo } = capitulo;
 
-    if (!autorEmail || !autorNome) {
-      return res.status(500).json({ success: false, message: "Autor não encontrado." });
+    if (!email || !nome) {
+      return res.status(500).json({
+        success: false,
+        message: "Autor com e-mail ou nome inválido",
+      });
     }
 
-    // Atualizando o status e a observação do capítulo
     const { error: updateError } = await supabase
-      .from("capitulos")
-      .update({ observacao_admin, status: "Solicitar Ajustes" })
-      .eq("id", capituloId);
+      .from("envios_capitulos")
+      .update({
+        observacao_admin,
+        status: "Solicitar Ajustes",
+      })
+      .eq("id", id);
 
     if (updateError) {
-      return res.status(500).json({ success: false, message: "Erro ao atualizar o capítulo." });
+      console.error("❌ Erro ao atualizar capítulo:", updateError);
+      return res
+        .status(500)
+        .json({ success: false, message: "Erro ao atualizar capítulo" });
     }
 
-    await transporter.sendMail({
+    const emailOptions = {
       from: `"Literare Books" <${process.env.SMTP_USER}>`,
-      to: autorEmail,
-      subject: `Ajustes solicitados no capítulo "${capituloId}"`,
+      to: email,
+      subject: `Ajustes solicitados no capítulo "${titulo_capitulo}"`,
       html: `
-        <p>Olá ${autorNome},</p>
+        <p>Olá ${nome},</p>
         <p>O capítulo que você enviou precisa de ajustes pelo seguinte motivo:</p>
         <p><strong>${observacao_admin}</strong></p>
         <p>Por favor, revise e envie novamente.</p>
       `,
+    };
+
+    await transporter.sendMail(emailOptions);
+    console.log(`✅ E-mail enviado para ${email}`);
+
+    return res.status(200).json({
+      success: true,
+      message: "Notificação enviada ao autor.",
     });
-
-    return res.status(200).json({ success: true, message: "Notificação enviada ao autor." });
-
   } catch (err) {
-    console.error("Erro ao solicitar ajustes:", err);
-    return res.status(500).json({ success: false, message: err.message || "Erro desconhecido" });
+    console.error("❌ Erro ao solicitar ajustes:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: err.message || "Erro desconhecido" });
   }
 }
