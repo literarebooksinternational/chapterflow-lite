@@ -1,4 +1,4 @@
-# revisor_app.py atualizado
+# revisor_app.py atualizado e corrigido
 
 import io
 import os
@@ -11,6 +11,7 @@ from spellchecker import SpellChecker
 import diff_match_patch as dmp_module
 import pythoncom
 import win32com.client as win32
+from docx.shared import RGBColor
 
 # Inicializa o Flask
 app = Flask(__name__)
@@ -36,7 +37,6 @@ def aplicar_correcoes_local(doc):
     report = []
 
     todas_regras = {}  # Aqui você pode colocar suas regras de substituição
-    # Exemplo: todas_regras = {re.compile(r'\bteh\b', re.IGNORECASE): 'the'}
 
     for p in doc.paragraphs:
         if not p.text.strip():
@@ -76,11 +76,11 @@ def aplicar_correcoes_local(doc):
                 run = p.add_run(text)
                 if op == dmp.DIFF_DELETE:
                     run.font.strike = True
-                    run.font.color.rgb = (255, 0, 0)
+                    run.font.color.rgb = RGBColor(255, 0, 0)  # ✅ corrigido
                     report.append({'original': text, 'corrigido': '', 'tipo': 'Remoção'})
                 elif op == dmp.DIFF_INSERT:
                     run.font.bold = True
-                    run.font.color.rgb = (0, 128, 0)
+                    run.font.color.rgb = RGBColor(0, 128, 0)  # ✅ corrigido
                     report.append({'original': '', 'corrigido': text, 'tipo': 'Adição'})
                 elif op == dmp.DIFF_EQUAL:
                     pass
@@ -94,7 +94,6 @@ def aplicar_correcoes_local(doc):
 
 WD_COLOR_PINK = 7
 WD_FIND_STOP = 0
-WD_STORY = 6
 WD_ALERTS_NONE = 0
 
 
@@ -140,15 +139,22 @@ def highlight_duplicate_sentences_com(input_path, output_path, min_len=8, visibl
                 find.MatchCase = False
                 found = find.Execute()
                 if not found:
+                    rng = None
+                    find = None
                     break
                 rng.HighlightColorIndex = WD_COLOR_PINK
                 start = rng.End
+                rng = None
+                find = None
 
-        # Salvar
         doc.SaveAs(os.path.abspath(output_path))
     finally:
-        doc.Close()
-        word.Quit()
+        if doc:
+            doc.Close(False)
+            doc = None
+        if word:
+            word.Quit()
+            word = None
         pythoncom.CoUninitialize()
 
 
@@ -203,7 +209,6 @@ def revisar_documento():
         try:
             os.remove(tmp_input_path)
             os.remove(tmp_corrected_path)
-            # tmp_output_path pode ser mantido ou removido
         except Exception:
             pass
 
