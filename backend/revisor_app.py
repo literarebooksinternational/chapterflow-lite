@@ -243,6 +243,11 @@ ERRORS = {
     re.compile(r'\bmágoa\b', re.IGNORECASE): 'mágoa',
     re.compile(r'\blíngua\b', re.IGNORECASE): 'língua',
     re.compile(r'\bágua\b', re.IGNORECASE): 'água',
+    re.compile(r'\bconseguia gostar do\b', re.IGNORECASE): 'conseguia gostar do',
+    re.compile(r'\bconseguia gostar da\b', re.IGNORECASE): 'conseguia gostar da',
+    re.compile(r'\bconseguia gostar de\b', re.IGNORECASE): 'consegua gostar de',
+    re.compile(r'\bninja\b', re.IGNORECASE): 'ninja',
+
 }
 
 # Homônimos
@@ -426,6 +431,9 @@ REGRAS_ESPECIAIS = {
     re.compile(r'\bdécada de 70\b', re.IGNORECASE): 'década de 1970',
     re.compile(r'\bdécada de 80\b', re.IGNORECASE): 'década de 1980',
     re.compile(r'\bdécada de 90\b', re.IGNORECASE): 'década de 1990',
+    re.compile(r'\bdesenvolvimentopessoal\b', re.IGNORECASE):'desenvolvimento pessoal',
+    re.compile(r'\bonline\b', re.IGNORECASE): 'online',
+
 }
 
 # Cacoetes de linguagem (mantidos do original)
