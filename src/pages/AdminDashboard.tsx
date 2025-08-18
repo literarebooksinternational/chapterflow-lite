@@ -433,8 +433,8 @@ export default function AdminDashboard() {
               <div className="flex items-center space-x-2">
                 <FileText className="h-8 w-8 text-editorial" />
                 <div>
-                  <span className="text-xl font-bold gradient-primary bg-clip-text text-transparent">Editorial</span>
-                  <p className="text-sm text-glass">Painel</p>
+                  <span className="text-xl font-bold gradient-primary bg-clip-text text-transparent">Painel</span>
+                  <p className="text-sm text-glass">Literare</p>
                 </div>
               </div>
             </div>
