@@ -5,12 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'; // Importa o Avatar
 import { Crown, Star, Edit, DollarSign, Target, Calendar, RefreshCw } from 'lucide-react';
 
-// Tipos de Dados
+// --- Tipos de Dados ---
 type Vendedora = {
   id: string;
   nome: string;
+  foto_url: string | null; // Adicionado campo para foto
   meta_pessoal: number;
   total_vendido: number;
 };
@@ -19,22 +24,25 @@ type MetaMensal = {
   valor_meta_geral: number;
 };
 
-type UserRole = 'admin' | 'vendedora' | null;
+type UserRole = 'admin' | 'vendedora' | 'editor' | 'reviewer' | null;
 
-// Função para formatar valores monetários
-const formatCurrency = (value: number | null | undefined) => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(value || 0);
-};
+// --- Funções Auxiliares ---
+const formatCurrency = (value: number | null | undefined) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
+const getInitials = (name: string) => name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 
+// --- Componente Principal ---
 export default function ComercialDashboard() {
   const [vendedoras, setVendedoras] = useState<Vendedora[]>([]);
   const [metaMensal, setMetaMensal] = useState<MetaMensal | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState<UserRole>(null);
   
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'metaGeral' | 'vendedora' | null>(null);
+  const [editingVendedora, setEditingVendedora] = useState<Vendedora | null>(null);
+  // Renomeado para 'ajusteVenda' para clareza
+  const [formData, setFormData] = useState({ metaGeral: '', metaPessoal: '', ajusteVenda: '' });
+
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -42,129 +50,138 @@ export default function ComercialDashboard() {
   const currentMonthNumber = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
 
-  // Função para buscar todos os dados necessários
   const fetchData = async () => {
     setIsLoading(true);
     try {
       if (!user) return;
-
-      // Busca a função do usuário atual
       const { data: userData } = await supabase.from('usuarios').select('role').eq('id', user.id).single();
-      setUserRole(userData?.role || 'vendedora');
-
-      // Busca a meta geral do mês
+      setUserRole(userData?.role || null);
       const { data: metaData } = await supabase.from('meta_mensal').select('valor_meta_geral').eq('mes', currentMonthNumber).eq('ano', currentYear).single();
       setMetaMensal(metaData);
-      
-      // Busca vendedoras e vendas do mês em paralelo para otimização
-      const [vendedorasRes, vendasRes] = await Promise.all([
-        supabase.from('vendedoras').select('*'),
-        supabase.from('vendas').select('vendedora_id, valor').eq('EXTRACT(MONTH from data)', currentMonthNumber).eq('EXTRACT(YEAR from data)', currentYear)
-      ]);
-
-      if (vendedorasRes.error) throw vendedorasRes.error;
-      if (vendasRes.error) throw vendasRes.error;
-
-      // Calcula o total vendido por vendedora
-      const vendedorasComVendas = vendedorasRes.data.map(v => {
-        const totalVendido = vendasRes.data
-          ?.filter(venda => venda.vendedora_id === v.id)
-          .reduce((acc, curr) => acc + (curr.valor || 0), 0) || 0;
+      const { data: vendedorasData, error: vendedorasError } = await supabase.from('vendedoras').select('*');
+      if (vendedorasError) throw vendedorasError;
+      const { data: vendasData, error: vendasError } = await supabase.from('vendas').select('vendedora_id, valor').filter('data', 'gte', new Date(currentYear, currentMonthNumber - 1, 1).toISOString()).filter('data', 'lt', new Date(currentYear, currentMonthNumber, 1).toISOString());
+      if (vendasError) throw vendasError;
+      const vendedorasComVendas = vendedorasData.map(v => {
+        const totalVendido = vendasData?.filter(venda => venda.vendedora_id === v.id).reduce((acc, curr) => acc + (curr.valor || 0), 0) || 0;
         return { ...v, total_vendido: totalVendido };
       });
       setVendedoras(vendedorasComVendas);
-
     } catch (error: any) {
-      toast({
-        title: 'Erro ao carregar dados',
-        description: 'Não foi possível buscar as informações do painel comercial.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Erro ao carregar dados', description: error.message, variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [user]);
+  useEffect(() => { if (user) fetchData(); }, [user]);
 
-  // Calcula o total de vendas do mês (só recalcula se as vendedoras mudarem)
-  const totalVendidoMes = useMemo(() => {
-    return vendedoras.reduce((acc, v) => acc + v.total_vendido, 0);
-  }, [vendedoras]);
-
-  // Encontra a maior vendedora do mês
+  const totalVendidoMes = useMemo(() => vendedoras.reduce((acc, v) => acc + v.total_vendido, 0), [vendedoras]);
   const maiorVendedoraId = useMemo(() => {
     if (vendedoras.length === 0) return null;
     const topSeller = vendedoras.reduce((max, current) => (current.total_vendido > max.total_vendido ? current : max));
     return topSeller.total_vendido > 0 ? topSeller.id : null;
   }, [vendedoras]);
 
-  if (isLoading) {
-    return <div className="flex items-center justify-center p-8"><RefreshCw className="h-8 w-8 animate-spin text-editorial" /></div>;
-  }
+  const handleOpenModal = (mode: 'metaGeral' | 'vendedora', vendedora: Vendedora | null = null) => {
+    setModalMode(mode);
+    if (mode === 'metaGeral') { setFormData({ metaGeral: metaMensal?.valor_meta_geral.toString() || '', metaPessoal: '', ajusteVenda: '' }); }
+    if (mode === 'vendedora' && vendedora) { setEditingVendedora(vendedora); setFormData({ metaPessoal: vendedora.meta_pessoal.toString(), ajusteVenda: '', metaGeral: '' }); }
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => { setIsModalOpen(false); setModalMode(null); setEditingVendedora(null); setFormData({ metaGeral: '', metaPessoal: '', ajusteVenda: '' }); };
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => { setFormData(prev => ({ ...prev, [name]: e.target.value })); };
+
+  const handleSubmit = async () => {
+    try {
+      if (modalMode === 'metaGeral') {
+        const novoValorMeta = parseFloat(formData.metaGeral) || 0;
+        const { error } = await supabase.from('meta_mensal').upsert({ mes: currentMonthNumber, ano: currentYear, valor_meta_geral: novoValorMeta }, { onConflict: 'mes,ano' });
+        if (error) throw error;
+        toast({ title: "Sucesso!", description: "Meta geral atualizada." });
+      }
+
+      if (modalMode === 'vendedora' && editingVendedora) {
+        const ajusteVenda = parseFloat(formData.ajusteVenda) || 0;
+        const novaMetaPessoal = parseFloat(formData.metaPessoal) || 0;
+
+        // Modificado: Agora insere qualquer valor diferente de zero (positivo ou negativo)
+        if (ajusteVenda !== 0) {
+          const { error } = await supabase.from('vendas').insert({ vendedora_id: editingVendedora.id, valor: ajusteVenda });
+          if (error) throw error;
+        }
+
+        if (novaMetaPessoal !== editingVendedora.meta_pessoal) {
+          const { error } = await supabase.from('vendedoras').update({ meta_pessoal: novaMetaPessoal }).eq('id', editingVendedora.id);
+          if (error) throw error;
+        }
+        toast({ title: "Sucesso!", description: `Dados de ${editingVendedora.nome} atualizados.` });
+      }
+      await fetchData();
+      handleCloseModal();
+    } catch (error: any) {
+      toast({ title: "Erro ao salvar", description: error.message, variant: 'destructive' });
+    }
+  };
+
+  if (isLoading) { return <div className="flex items-center justify-center p-8"><RefreshCw className="h-8 w-8 animate-spin text-editorial" /></div>; }
 
   return (
-    <div className="space-y-6">
-      <Card className="border-2 border-editorial/50 shadow-lg bg-card/50">
-        <CardHeader>
-          <div className="flex justify-between items-center">
-             <CardTitle className="text-2xl font-bold gradient-primary bg-clip-text text-transparent">Desempenho Comercial</CardTitle>
-             {userRole === 'admin' && <Button size="sm" variant="outline"><Edit className="h-4 w-4 mr-2"/>Editar Meta Geral</Button>}
-          </div>
-          <p className="text-sm text-muted-foreground flex items-center"><Calendar className="mr-2 h-4 w-4" />{currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1)} de {currentYear}</p>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
-            <div className="bg-background/70 p-4 rounded-lg">
-                <p className="text-sm font-medium text-muted-foreground">Meta Mensal Geral</p>
-                <p className="text-2xl font-bold flex items-center justify-center gap-2"><Target className="text-editorial" /> {formatCurrency(metaMensal?.valor_meta_geral)}</p>
-            </div>
-            <div className="bg-background/70 p-4 rounded-lg">
-                <p className="text-sm font-medium text-muted-foreground">Total de Vendas Atual</p>
-                <p className="text-2xl font-bold flex items-center justify-center gap-2"><DollarSign className="text-green-500" /> {formatCurrency(totalVendidoMes)}</p>
-            </div>
-        </CardContent>
-      </Card>
-      
-      <div className="space-y-4">
-        {vendedoras.sort((a, b) => b.total_vendido - a.total_vendido).map(vendedora => {
-          const progresso = vendedora.meta_pessoal > 0 ? (vendedora.total_vendido / vendedora.meta_pessoal) * 100 : 0;
-          const metaBatida = progresso >= 100;
-          const isMaiorVendedora = vendedora.id === maiorVendedoraId;
-
-          return (
-            <Card key={vendedora.id} className="bg-card/50">
-                <CardContent className="p-4">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <div className="flex items-center gap-4 flex-1">
-                            <div className="text-2xl flex gap-2">
-                                {isMaiorVendedora && <span title="Maior Vendedora do Mês" className="text-yellow-400">👑</span>}
-                                {metaBatida && <span title="Meta Batida!" className="text-cyan-400">⭐</span>}
-                            </div>
-                            <div className="w-full">
-                                <div className="flex justify-between items-baseline">
-                                    <p className="font-bold text-lg text-white">{vendedora.nome}</p>
-                                    <p className="text-xs text-muted-foreground">Meta: {formatCurrency(vendedora.meta_pessoal)}</p>
-                                </div>
-                                <Progress value={progresso} className="h-3 mt-1" />
-                                <p className="text-sm font-semibold text-right mt-1 text-green-400">{formatCurrency(vendedora.total_vendido)}</p>
-                            </div>
-                        </div>
-
-                        {userRole === 'admin' && (
-                            <Button variant="outline" size="sm">
-                                <Edit className="h-4 w-4 mr-2" />
-                                Alterar Dados
-                            </Button>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
-          );
-        })}
+    <>
+      <div className="space-y-6">
+        <Card className="border-2 border-editorial/50 shadow-lg bg-card/50">
+          <CardHeader>
+            <div className="flex justify-between items-center"><CardTitle className="text-2xl font-bold gradient-primary bg-clip-text text-transparent">Desempenho Comercial</CardTitle>{userRole === 'admin' && <Button size="sm" variant="outline" onClick={() => handleOpenModal('metaGeral')}><Edit className="h-4 w-4 mr-2"/>Editar Meta Geral</Button>}</div>
+            <p className="text-sm text-muted-foreground flex items-center"><Calendar className="mr-2 h-4 w-4" />{currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1)} de {currentYear}</p>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
+            <div className="bg-background/70 p-4 rounded-lg"><p className="text-sm font-medium text-muted-foreground">Meta Mensal Geral</p><p className="text-2xl font-bold flex items-center justify-center gap-2"><Target className="text-editorial" /> {formatCurrency(metaMensal?.valor_meta_geral)}</p></div>
+            <div className="bg-background/70 p-4 rounded-lg"><p className="text-sm font-medium text-muted-foreground">Total de Vendas Atual</p><p className="text-2xl font-bold flex items-center justify-center gap-2"><DollarSign className="text-green-500" /> {formatCurrency(totalVendidoMes)}</p></div>
+          </CardContent>
+        </Card>
+        <div className="space-y-4">
+          {vendedoras.sort((a, b) => b.total_vendido - a.total_vendido).map(vendedora => {
+            const progresso = vendedora.meta_pessoal > 0 ? (vendedora.total_vendido / vendedora.meta_pessoal) * 100 : 0;
+            const metaBatida = progresso >= 100;
+            const isMaiorVendedora = vendedora.id === maiorVendedoraId;
+            return (
+              <Card key={vendedora.id} className="bg-card/50">
+                <CardContent className="p-4"><div className="flex items-center justify-between gap-4"><div className="flex items-center gap-4 flex-1">
+                  {/* Foto de Perfil Adicionada */}
+                  <Avatar className="h-12 w-12"><AvatarImage src={vendedora.foto_url || ''} alt={vendedora.nome} /><AvatarFallback>{getInitials(vendedora.nome)}</AvatarFallback></Avatar>
+                  <div className="w-full">
+                    <div className="flex justify-between items-baseline"><div className="flex items-center gap-2"><p className="font-bold text-lg text-white">{vendedora.nome}</p><div className="text-lg flex gap-1.5">{isMaiorVendedora && <span title="Maior Vendedora do Mês">👑</span>}{metaBatida && <span title="Meta Batida!">⭐</span>}</div></div><p className="text-xs text-muted-foreground">Meta: {formatCurrency(vendedora.meta_pessoal)}</p></div>
+                    <Progress value={progresso} className="h-3 mt-1" />
+                    <p className="text-sm font-semibold text-right mt-1 text-green-400">{formatCurrency(vendedora.total_vendido)}</p>
+                  </div>
+                </div>{userRole === 'admin' && (<Button variant="outline" size="sm" onClick={() => handleOpenModal('vendedora', vendedora)} className="ml-4"><Edit className="h-4 w-4 mr-2" />Alterar</Button>)}</div></CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
-      {/* Aqui entrariam os modais para edição, controlados por estados */}
-    </div>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader><DialogTitle>{modalMode === 'metaGeral' ? 'Editar Meta Geral' : `Alterar Dados de ${editingVendedora?.nome}`}</DialogTitle></DialogHeader>
+          <div className="grid gap-4 py-4">
+            {modalMode === 'metaGeral' && (<div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="metaGeral" className="text-right">Meta (R$)</Label><Input id="metaGeral" name="metaGeral" value={formData.metaGeral} onChange={handleFormChange} className="col-span-3" type="number" placeholder="Ex: 750000" /></div>)}
+            {modalMode === 'vendedora' && (<>
+              {/* Campo de Venda Modificado */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="ajusteVenda" className="text-right">Ajustar Vendas (R$)</Label>
+                <Input id="ajusteVenda" name="ajusteVenda" value={formData.ajusteVenda} onChange={handleFormChange} className="col-span-3" type="number" placeholder="Use valor negativo para retirar"/>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="metaPessoal" className="text-right">Meta Pessoal (R$)</Label>
+                <Input id="metaPessoal" name="metaPessoal" value={formData.metaPessoal} onChange={handleFormChange} className="col-span-3" type="number" placeholder="Ex: 150000" />
+              </div>
+            </>)}
+          </div>
+          <DialogFooter><DialogClose asChild><Button type="button" variant="secondary">Cancelar</Button></DialogClose><Button type="button" onClick={handleSubmit}>Salvar Alterações</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
