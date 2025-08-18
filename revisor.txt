@@ -1,5 +1,9 @@
 # revisor_app.py
-
+ # Este arquivo está desativado
+     # Este código não será executado
+     # ...
+     #
+    
 import io
 import re
 import json
@@ -552,7 +556,11 @@ def revisar_documento():
         try:
             doc = docx.Document(io.BytesIO(file.read()))
             doc_corrigido, relatorio = aplicar_correcoes_com_diff(doc)
-
+ # Este arquivo está desativado
+     # Este código não será executado
+     # ...
+     #
+     # Restante do código desativado
             buffer = io.BytesIO()
             doc_corrigido.save(buffer)
             buffer.seek(0)
@@ -577,3 +585,4 @@ def revisar_documento():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+    
