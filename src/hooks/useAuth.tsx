@@ -2,14 +2,14 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-// MUDANÇA 1: Criamos um tipo para o nosso usuário que inclui a 'role' do perfil
+// Criamos um tipo para o nosso usuário que inclui a 'role' do perfil
 export interface UserProfile extends User {
   role?: string;
   display_name?: string;
 }
 
 interface AuthContextType {
-  user: UserProfile | null; // Usamos o novo tipo aqui
+  user: UserProfile | null;
   session: Session | null;
   isLoading: boolean;
   isAuthorized: boolean;
@@ -20,38 +20,38 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // MUDANÇA 2: O estado do usuário agora usa o novo tipo
   const [user, setUser] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
+    // Este listener é a única fonte da verdade para o estado do usuário.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setIsLoading(true);
         setSession(session);
 
         if (session?.user) {
-          // MUDANÇA 3: A lógica de autorização foi movida para cá e corrigida
-          // Agora buscamos o perfil do usuário, o que é permitido pela RLS
+          // LÓGICA CORRETA: Buscamos o perfil do usuário.
+          // A RLS permite isso para qualquer usuário logado (ver seu próprio perfil).
           const { data: profile } = await supabase
             .from('profiles')
             .select('*')
-            .eq('user_id', session.user.id) // Usando a coluna 'user_id' correta
+            .eq('user_id', session.user.id)
             .single();
 
           if (profile) {
-            // Se encontrarmos um perfil, o usuário é um funcionário válido
+            // Se o perfil existe, ele é um funcionário autorizado.
             setUser({ ...session.user, ...profile });
             setIsAuthorized(true);
           } else {
-            // Se não houver perfil, ele não é um funcionário autorizado
+            // Se não há perfil, ele não é um funcionário do painel.
             setUser(session.user);
             setIsAuthorized(false);
           }
         } else {
-          // Se não há sessão, limpa tudo
+          // Sem sessão, sem autorização.
           setUser(null);
           setIsAuthorized(false);
         }
@@ -62,11 +62,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // MUDANÇA 4: A função 'checkAuthorization' foi completamente REMOVIDA
-  // pois sua lógica agora está no listener acima.
-
+  // A função signIn agora é simples e correta.
   const signIn = async (email: string, password: string) => {
-    // A função signIn continua simples, como deveria ser
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -76,7 +73,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    setUser(null); // Garante que o estado seja limpo imediatamente
   };
 
   return (
