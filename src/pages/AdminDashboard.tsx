@@ -230,11 +230,11 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    if (user && isAuthorized) {
-      fetchEnvios();
-      fetchProfiles();
-    }
-  }, [user, isAuthorized]);
+  if (isAuthorized) { // A verificação 'user' aqui dentro não é estritamente necessária se 'isAuthorized' já faz isso
+    fetchEnvios();
+    fetchProfiles();
+  }
+}, [isAuthorized]); // Dependa apenas da autorização
 
   useEffect(() => {
     filterEnvios();
