@@ -17,10 +17,9 @@ import ChapterChat from '@/components/AdminDashboard/ChapterChat';
 import LogisticsBoard from "@/pages/LogisticsBoard";
 import { RevisorAutomatico } from "@/components/AdminDashboard/RevisorAutomatico";
 import ComercialDashboard from "./comercial";
-import { User, FileText, Download, Filter, Search, LogOut, Settings, FileDown, RefreshCw, Calendar, Book, Edit2, MessageCircle, AlertTriangle, ListChecks, Truck, BarChart2, Calculator, DollarSign } from 'lucide-react';
+import { FileText, Download, Search, LogOut, FileDown, RefreshCw, Book, Edit2, MessageCircle, AlertTriangle, ListChecks, Truck, BarChart2, Calculator, DollarSign } from 'lucide-react';
 import Papa from 'papaparse';
 import { animateIn } from '@/hooks/useGSAP';
-import { Kanban } from '@/components/ui/kanban'; // Supondo que você tenha um componente Kanban
 
 // Componente da Calculadora Funcional
 const CalculadoraCustoLivro = () => {
@@ -29,7 +28,7 @@ const CalculadoraCustoLivro = () => {
     const [tiragem, setTiragem] = useState('');
     const [custoPorPagina, setCustoPorPagina] = useState('');
     const [precoVenda, setPrecoVenda] = useState('');
-    const [percentualRoyalties, setPercentualRoyalties] = useState('10'); // Padrão de 10%
+    const [percentualRoyalties, setPercentualRoyalties] = useState('10');
     const [resultados, setResultados] = useState<{
         custoTotal: number;
         receitaTotal: number;
@@ -129,26 +128,6 @@ const CalculadoraCustoLivro = () => {
     );
 };
 
-
-const mockUsers = [
-  { id: 1, name: 'João Silva', position: 'Editor', avatar: '', status: 'pending' },
-  { id: 2, name: 'Maria Oliveira', position: 'Revisor', avatar: '', status: 'in_progress' },
-  { id: 3, name: 'Carlos Souza', position: 'Autor', avatar: '', status: 'signed' },
-];
-
-const mockTasks = [
-  { id: 1, title: 'Revisar capítulo 1', description: 'Revisar o conteúdo do capítulo 1', priority: 'high', status: 'todo' },
-  { id: 2, title: 'Enviar feedback', description: 'Enviar feedback para o autor', priority: 'medium', status: 'in_progress' },
-];
-
-type MockUser = {
-  id: number;
-  name: string;
-  position: string;
-  avatar: string;
-  status: string;
-};
-
 export default function AdminDashboard() {
   const [envios, setEnvios] = useState<EnvioCapitulo[]>([]);
   const [filteredEnvios, setFilteredEnvios] = useState<EnvioCapitulo[]>([]);
@@ -160,7 +139,7 @@ export default function AdminDashboard() {
   const [editingEnvio, setEditingEnvio] = useState<string | null>(null);
   const [editData, setEditData] = useState<{ status: StatusEnvio; observacao: string; responsibleUserId: string }>({ status: 'Recebido', observacao: '', responsibleUserId: '' });
   const [chatChapterId, setChatChapterId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'capitulos' | 'calculadora' | 'revisor' | 'logistica' | 'comercial' | 'rh'>('capitulos');
+  const [activeTab, setActiveTab] = useState<'capitulos' | 'calculadora' | 'revisor' | 'logistica' | 'comercial'>('capitulos');
   const [isAdjustmentModalOpen, setIsAdjustmentModalOpen] = useState<boolean>(false);
   const [adjustmentObservation, setAdjustmentObservation] = useState<string>("");
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
@@ -169,32 +148,6 @@ export default function AdminDashboard() {
   const { toast } = useToast();
   const dashboardRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
-  const [selectedUser, setSelectedUser] = useState<MockUser | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [message, setMessage] = useState('');
-  const [document, setDocument] = useState<File | null>(null);
-  const [tasks, setTasks] = useState(mockTasks);
-  const [rhSubTab, setRhSubTab] = useState<'assinatura' | 'tarefas'>('assinatura');
-
-
-  const handleOpenModal = (user: MockUser) => {
-    setSelectedUser(user);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedUser(null);
-    setMessage('');
-    setDocument(null);
-    setIsModalOpen(false);
-  };
-
-  const handleSendDocument = () => {
-    if (selectedUser) {
-        console.log(`Enviando documento para ${selectedUser.name} com a mensagem: ${message}`);
-    }
-    handleCloseModal();
-  };
 
   const handleOpenAdjustmentModal = (chapterId: string) => {
     setSelectedChapterId(chapterId);
@@ -394,11 +347,6 @@ export default function AdminDashboard() {
           <button onClick={() => setActiveTab('comercial')} className={`flex items-center px-4 py-3 text-sm font-semibold transition-all duration-200 ease-in-out -mb-px ${activeTab === 'comercial' ? 'text-editorial border-b-2 border-editorial' : 'text-glass hover:text-white border-b-2 border-transparent'}`} aria-current={activeTab === 'comercial' ? 'page' : undefined}>
             <BarChart2 className="h-4 w-4 mr-2" />Comercial
           </button>
-          {user?.role === 'admin' && (
-            <button onClick={() => setActiveTab('rh')} className={`flex items-center px-4 py-3 text-sm font-semibold transition-all duration-200 ease-in-out -mb-px ${activeTab === 'rh' ? 'text-editorial border-b-2 border-editorial' : 'text-glass hover:text-white border-b-2 border-transparent'}`} aria-current={activeTab === 'rh' ? 'page' : undefined}>
-              <User className="h-4 w-4 mr-2" /> RH
-            </button>
-          )}
         </div>
 
         {activeTab === 'capitulos' && (
@@ -563,56 +511,6 @@ export default function AdminDashboard() {
         {activeTab === 'comercial' && (
           <div className="animate-in fade-in-0 duration-300">
             <ComercialDashboard />
-          </div>
-        )}
-
-        {activeTab === 'rh' && (
-          <div className="animate-in fade-in-0 duration-300">
-            <div className="flex space-x-4 mb-4">
-              <Button onClick={() => setRhSubTab('assinatura')} className={`flex-1 ${rhSubTab === 'assinatura' ? 'bg-muted' : ''}`}>Assinatura de Documentos</Button>
-              <Button onClick={() => setRhSubTab('tarefas')} className={`flex-1 ${rhSubTab === 'tarefas' ? 'bg-muted' : ''}`}>Quadro de Tarefas de RH</Button>
-            </div>
-
-            {rhSubTab === 'assinatura' && (
-              <Card className="bg-card border-glass-border">
-                <CardHeader>
-                  <CardTitle className="text-white">Assinatura de Documentos</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col space-y-4">
-                    {mockUsers.map(user => (
-                      <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg shadow-md border-glass-border">
-                        <div className="flex items-center">
-                          <Avatar className="h-10 w-10">
-                            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <div className="ml-4">
-                            <h3 className="font-semibold">{user.name}</h3>
-                            <p className="text-sm text-muted-foreground">{user.position}</p>
-                            <Badge variant={user.status === 'pending' ? 'destructive' : user.status === 'in_progress' ? 'secondary' : 'default'}>
-                              {user.status === 'pending' ? 'Pendente' : user.status === 'in_progress' ? 'Em Andamento' : 'Assinado'}
-                            </Badge>
-                          </div>
-                        </div>
-                        <Button onClick={() => handleOpenModal(user)}>Enviar Documento</Button>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {rhSubTab === 'tarefas' && (
-              <Card className="bg-card border-glass-border">
-                <CardHeader>
-                  <CardTitle className="text-white">Quadro de Tarefas de RH</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Kanban tasks={tasks} setTasks={setTasks} />
-                  <Button className="mt-4" onClick={() => {/* lógica para adicionar nova tarefa */}}>Adicionar Nova Tarefa</Button>
-                </CardContent>
-              </Card>
-            )}
           </div>
         )}
 
