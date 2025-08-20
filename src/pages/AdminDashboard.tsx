@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
@@ -17,9 +17,137 @@ import ChapterChat from '@/components/AdminDashboard/ChapterChat';
 import LogisticsBoard from "@/pages/LogisticsBoard";
 import { RevisorAutomatico } from "@/components/AdminDashboard/RevisorAutomatico";
 import ComercialDashboard from "./comercial";
-import { FileText, Download, Filter, Search, LogOut, Settings, FileDown, RefreshCw, Calendar, Book, Edit2, MessageCircle, AlertTriangle, ListChecks, Truck, BarChart2 } from 'lucide-react';
+import { User, FileText, Download, Filter, Search, LogOut, Settings, FileDown, RefreshCw, Calendar, Book, Edit2, MessageCircle, AlertTriangle, ListChecks, Truck, BarChart2, Calculator, DollarSign } from 'lucide-react';
 import Papa from 'papaparse';
 import { animateIn } from '@/hooks/useGSAP';
+import { Kanban } from '@/components/ui/kanban'; // Supondo que você tenha um componente Kanban
+
+// Componente da Calculadora Funcional
+const CalculadoraCustoLivro = () => {
+    const { toast } = useToast();
+    const [numPaginas, setNumPaginas] = useState('');
+    const [tiragem, setTiragem] = useState('');
+    const [custoPorPagina, setCustoPorPagina] = useState('');
+    const [precoVenda, setPrecoVenda] = useState('');
+    const [percentualRoyalties, setPercentualRoyalties] = useState('10'); // Padrão de 10%
+    const [resultados, setResultados] = useState<{
+        custoTotal: number;
+        receitaTotal: number;
+        royaltiesAutor: number;
+        lucroEditora: number;
+        lucroPorLivro: number;
+    } | null>(null);
+
+    const formatCurrency = (value: number) => {
+        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+    };
+
+    const handleCalcular = () => {
+        const paginas = parseFloat(numPaginas);
+        const qtdLivros = parseFloat(tiragem);
+        const custoPag = parseFloat(custoPorPagina);
+        const precoCapa = parseFloat(precoVenda);
+        const royaltiesPerc = parseFloat(percentualRoyalties);
+
+        if (isNaN(paginas) || isNaN(qtdLivros) || isNaN(custoPag) || isNaN(precoCapa) || isNaN(royaltiesPerc)) {
+            toast({
+                title: "Erro de Validação",
+                description: "Por favor, preencha todos os campos com números válidos.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        const custoProducaoUnidade = paginas * custoPag;
+        const custoTotal = custoProducaoUnidade * qtdLivros;
+        const receitaTotal = precoCapa * qtdLivros;
+        const royaltiesAutor = (precoCapa * (royaltiesPerc / 100)) * qtdLivros;
+        const lucroEditora = receitaTotal - custoTotal - royaltiesAutor;
+        const lucroPorLivro = lucroEditora / qtdLivros;
+
+        setResultados({
+            custoTotal,
+            receitaTotal,
+            royaltiesAutor,
+            lucroEditora,
+            lucroPorLivro,
+        });
+    };
+
+    return (
+        <Card className="bg-card border-glass-border w-full">
+            <CardHeader>
+                <CardTitle className="text-xl flex items-center text-white">
+                    <Calculator className="h-6 w-6 text-editorial mr-2" />
+                    Calculadora de Custos e Royalties
+                </CardTitle>
+                <CardDescription>
+                    Estime os custos de produção, royalties e o lucro da sua publicação.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                    <div>
+                        <Label htmlFor="paginas">Número de Páginas</Label>
+                        <Input id="paginas" type="number" placeholder="Ex: 200" value={numPaginas} onChange={(e) => setNumPaginas(e.target.value)} className="bg-background text-white" />
+                    </div>
+                    <div>
+                        <Label htmlFor="tiragem">Tiragem (Nº de Cópias)</Label>
+                        <Input id="tiragem" type="number" placeholder="Ex: 1000" value={tiragem} onChange={(e) => setTiragem(e.target.value)} className="bg-background text-white" />
+                    </div>
+                    <div>
+                        <Label htmlFor="custo-pagina">Custo de Impressão por Página (R$)</Label>
+                        <Input id="custo-pagina" type="number" placeholder="Ex: 0.15" value={custoPorPagina} onChange={(e) => setCustoPorPagina(e.target.value)} className="bg-background text-white" />
+                    </div>
+                     <div>
+                        <Label htmlFor="preco-venda">Preço de Venda (R$)</Label>
+                        <Input id="preco-venda" type="number" placeholder="Ex: 49.90" value={precoVenda} onChange={(e) => setPrecoVenda(e.target.value)} className="bg-background text-white" />
+                    </div>
+                    <div>
+                        <Label htmlFor="royalties">Percentual de Royalties do Autor (%)</Label>
+                        <Input id="royalties" type="number" placeholder="Ex: 10" value={percentualRoyalties} onChange={(e) => setPercentualRoyalties(e.target.value)} className="bg-background text-white" />
+                    </div>
+                </div>
+
+                {resultados && (
+                    <div className="bg-background/50 p-4 rounded-lg space-y-3 flex flex-col justify-center">
+                         <h3 className="text-lg font-semibold text-white border-b border-glass-border pb-2">Resultados da Simulação</h3>
+                         <div className="flex justify-between items-center"><span className="text-muted-foreground">Custo Total de Produção:</span> <span className="font-bold text-red-400">{formatCurrency(resultados.custoTotal)}</span></div>
+                         <div className="flex justify-between items-center"><span className="text-muted-foreground">Receita Bruta Total:</span> <span className="font-bold text-green-400">{formatCurrency(resultados.receitaTotal)}</span></div>
+                         <div className="flex justify-between items-center"><span className="text-muted-foreground">Royalties do Autor (Total):</span> <span className="font-bold text-yellow-400">{formatCurrency(resultados.royaltiesAutor)}</span></div>
+                         <div className="flex justify-between items-center text-lg"><span className="text-white">Lucro da Editora (Total):</span> <span className="font-bold text-editorial">{formatCurrency(resultados.lucroEditora)}</span></div>
+                         <div className="flex justify-between items-center text-sm"><span className="text-muted-foreground">Lucro por Livro Vendido:</span> <span className="font-medium text-cyan-400">{formatCurrency(resultados.lucroPorLivro)}</span></div>
+                    </div>
+                )}
+            </CardContent>
+            <CardFooter>
+                <Button onClick={handleCalcular} className="w-full gradient-button">
+                    <DollarSign className="h-4 w-4 mr-2" />Calcular
+                </Button>
+            </CardFooter>
+        </Card>
+    );
+};
+
+
+const mockUsers = [
+  { id: 1, name: 'João Silva', position: 'Editor', avatar: '', status: 'pending' },
+  { id: 2, name: 'Maria Oliveira', position: 'Revisor', avatar: '', status: 'in_progress' },
+  { id: 3, name: 'Carlos Souza', position: 'Autor', avatar: '', status: 'signed' },
+];
+
+const mockTasks = [
+  { id: 1, title: 'Revisar capítulo 1', description: 'Revisar o conteúdo do capítulo 1', priority: 'high', status: 'todo' },
+  { id: 2, title: 'Enviar feedback', description: 'Enviar feedback para o autor', priority: 'medium', status: 'in_progress' },
+];
+
+type MockUser = {
+  id: number;
+  name: string;
+  position: string;
+  avatar: string;
+  status: string;
+};
 
 export default function AdminDashboard() {
   const [envios, setEnvios] = useState<EnvioCapitulo[]>([]);
@@ -32,7 +160,7 @@ export default function AdminDashboard() {
   const [editingEnvio, setEditingEnvio] = useState<string | null>(null);
   const [editData, setEditData] = useState<{ status: StatusEnvio; observacao: string; responsibleUserId: string }>({ status: 'Recebido', observacao: '', responsibleUserId: '' });
   const [chatChapterId, setChatChapterId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'capitulos' | 'calculadora' | 'revisor' | 'logistica' | 'comercial'>('capitulos');
+  const [activeTab, setActiveTab] = useState<'capitulos' | 'calculadora' | 'revisor' | 'logistica' | 'comercial' | 'rh'>('capitulos');
   const [isAdjustmentModalOpen, setIsAdjustmentModalOpen] = useState<boolean>(false);
   const [adjustmentObservation, setAdjustmentObservation] = useState<string>("");
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
@@ -41,6 +169,32 @@ export default function AdminDashboard() {
   const { toast } = useToast();
   const dashboardRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const [selectedUser, setSelectedUser] = useState<MockUser | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [message, setMessage] = useState('');
+  const [document, setDocument] = useState<File | null>(null);
+  const [tasks, setTasks] = useState(mockTasks);
+  const [rhSubTab, setRhSubTab] = useState<'assinatura' | 'tarefas'>('assinatura');
+
+
+  const handleOpenModal = (user: MockUser) => {
+    setSelectedUser(user);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedUser(null);
+    setMessage('');
+    setDocument(null);
+    setIsModalOpen(false);
+  };
+
+  const handleSendDocument = () => {
+    if (selectedUser) {
+        console.log(`Enviando documento para ${selectedUser.name} com a mensagem: ${message}`);
+    }
+    handleCloseModal();
+  };
 
   const handleOpenAdjustmentModal = (chapterId: string) => {
     setSelectedChapterId(chapterId);
@@ -58,8 +212,6 @@ export default function AdminDashboard() {
     setIsSubmitting(true);
     try {
       console.log(`Enviando ajuste para o capítulo ${selectedChapterId} com a observação: ${adjustmentObservation}`);
-      // LÓGICA DE ATUALIZAÇÃO NO SUPABASE AQUI
-      // await updateEnvio(selectedChapterId, { status: 'Solicitar Ajustes', observacao_ajuste: adjustmentObservation });
       toast({ title: 'Solicitação enviada!', description: 'O autor foi notificado para realizar os ajustes.' });
       handleCloseAdjustmentModal();
     } catch (error) {
@@ -175,10 +327,10 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (isAuthorized) {
-      fetchEnvios();
-      fetchProfiles();
+        fetchEnvios();
+        fetchProfiles();
     }
-  }, [isAuthorized]);
+    }, [isAuthorized]);
 
   useEffect(() => {
     filterEnvios();
@@ -231,7 +383,7 @@ export default function AdminDashboard() {
             <Book className="h-4 w-4 mr-2" />Capítulos
           </button>
           <button onClick={() => setActiveTab('calculadora')} className={`flex items-center px-4 py-3 text-sm font-semibold transition-all duration-200 ease-in-out -mb-px ${activeTab === 'calculadora' ? 'text-editorial border-b-2 border-editorial' : 'text-glass hover:text-white border-b-2 border-transparent'}`} aria-current={activeTab === 'calculadora' ? 'page' : undefined}>
-            <FileText className="h-4 w-4 mr-2" />Calculadora
+            <Calculator className="h-4 w-4 mr-2" />Calculadora
           </button>
           <button onClick={() => setActiveTab('revisor')} className={`flex items-center px-4 py-3 text-sm font-semibold transition-all duration-200 ease-in-out -mb-px ${activeTab === 'revisor' ? 'text-editorial border-b-2 border-editorial' : 'text-glass hover:text-white border-b-2 border-transparent'}`} aria-current={activeTab === 'revisor' ? 'page' : undefined}>
             <ListChecks className="h-4 w-4 mr-2" />Revisor de Texto
@@ -242,6 +394,11 @@ export default function AdminDashboard() {
           <button onClick={() => setActiveTab('comercial')} className={`flex items-center px-4 py-3 text-sm font-semibold transition-all duration-200 ease-in-out -mb-px ${activeTab === 'comercial' ? 'text-editorial border-b-2 border-editorial' : 'text-glass hover:text-white border-b-2 border-transparent'}`} aria-current={activeTab === 'comercial' ? 'page' : undefined}>
             <BarChart2 className="h-4 w-4 mr-2" />Comercial
           </button>
+          {user?.role === 'admin' && (
+            <button onClick={() => setActiveTab('rh')} className={`flex items-center px-4 py-3 text-sm font-semibold transition-all duration-200 ease-in-out -mb-px ${activeTab === 'rh' ? 'text-editorial border-b-2 border-editorial' : 'text-glass hover:text-white border-b-2 border-transparent'}`} aria-current={activeTab === 'rh' ? 'page' : undefined}>
+              <User className="h-4 w-4 mr-2" /> RH
+            </button>
+          )}
         </div>
 
         {activeTab === 'capitulos' && (
@@ -253,7 +410,7 @@ export default function AdminDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                 <div className="flex flex-col md:flex-row gap-4 mb-6">
                   <div className="flex-1">
                     <Label htmlFor="search" className="sr-only">Pesquisar</Label>
                     <div className="relative">
@@ -387,7 +544,7 @@ export default function AdminDashboard() {
 
         {activeTab === 'calculadora' && (
           <div className="animate-in fade-in-0 duration-300">
-            <Card className="bg-card border-glass-border"><CardHeader><CardTitle>Calculadora</CardTitle></CardHeader><CardContent><p>Componente da Calculadora aqui.</p></CardContent></Card>
+            <CalculadoraCustoLivro />
           </div>
         )}
 
@@ -406,6 +563,56 @@ export default function AdminDashboard() {
         {activeTab === 'comercial' && (
           <div className="animate-in fade-in-0 duration-300">
             <ComercialDashboard />
+          </div>
+        )}
+
+        {activeTab === 'rh' && (
+          <div className="animate-in fade-in-0 duration-300">
+            <div className="flex space-x-4 mb-4">
+              <Button onClick={() => setRhSubTab('assinatura')} className={`flex-1 ${rhSubTab === 'assinatura' ? 'bg-muted' : ''}`}>Assinatura de Documentos</Button>
+              <Button onClick={() => setRhSubTab('tarefas')} className={`flex-1 ${rhSubTab === 'tarefas' ? 'bg-muted' : ''}`}>Quadro de Tarefas de RH</Button>
+            </div>
+
+            {rhSubTab === 'assinatura' && (
+              <Card className="bg-card border-glass-border">
+                <CardHeader>
+                  <CardTitle className="text-white">Assinatura de Documentos</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col space-y-4">
+                    {mockUsers.map(user => (
+                      <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg shadow-md border-glass-border">
+                        <div className="flex items-center">
+                          <Avatar className="h-10 w-10">
+                            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div className="ml-4">
+                            <h3 className="font-semibold">{user.name}</h3>
+                            <p className="text-sm text-muted-foreground">{user.position}</p>
+                            <Badge variant={user.status === 'pending' ? 'destructive' : user.status === 'in_progress' ? 'secondary' : 'default'}>
+                              {user.status === 'pending' ? 'Pendente' : user.status === 'in_progress' ? 'Em Andamento' : 'Assinado'}
+                            </Badge>
+                          </div>
+                        </div>
+                        <Button onClick={() => handleOpenModal(user)}>Enviar Documento</Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {rhSubTab === 'tarefas' && (
+              <Card className="bg-card border-glass-border">
+                <CardHeader>
+                  <CardTitle className="text-white">Quadro de Tarefas de RH</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Kanban tasks={tasks} setTasks={setTasks} />
+                  <Button className="mt-4" onClick={() => {/* lógica para adicionar nova tarefa */}}>Adicionar Nova Tarefa</Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
 
